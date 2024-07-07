@@ -39,6 +39,9 @@ const uint8_t Optimisation = LDRO_AUTO;   			//tối ưu hóa tốc độ dữ l
 
 //FREQUENCY CHANNELS:
 const uint32_t CH_00_433 = 433300000;
+const uint32_t CH_01_433 = 433600000;
+const uint32_t CH_02_433 = 433900000;
+const uint32_t CH_03_433 = 434300000;
 uint32_t DEFAULT_CHANNEL=CH_00_433;
 
 //Loại gói tin LoRa

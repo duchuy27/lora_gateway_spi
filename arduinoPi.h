@@ -58,8 +58,8 @@
 #ifndef arduinoPi_h
 #define arduinoPi_h
 
-#include <wiringPi.h>
-#include <wiringPiSPI.h>
+// #include <wiringPi.h>
+// #include <wiringPiSPI.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>

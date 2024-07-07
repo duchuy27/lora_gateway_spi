@@ -376,7 +376,7 @@ void setup()
   PRINT_STR("%s\n", time_str);
   
   FLUSHOUTPUT;
-  delay(500);
+  usleep(500);
 }
 
 void packet_is_Error()
@@ -684,7 +684,7 @@ void loop(void)
 					else
 					if (checkForLateDownlinkJACC1) { 
 						// retry later, for RX2 (join)
-						delay(DELAY_EXTDNW2);
+						usleep(DELAY_EXTDNW2);
 						checkForLateDownlinkJACC1=false;
 						checkForLateDownlinkJACC2=true;
 					}				 			
@@ -692,7 +692,7 @@ void loop(void)
 						//we initiate the entire downlink check only for LoRaWAN, i.e. when raw mode is enabled
 						if (optRAW) { 
 							// retry later, for RX2 (data)
-							delay(DELAY_EXTDNW2);
+							usleep(DELAY_EXTDNW2);
 							checkForLateDownlinkRX2=true;
 						}
 					}    			
@@ -1005,29 +1005,29 @@ int main (int argc, char *argv[]){
   while ((opt = getopt_long(argc, argv,"a:b:c:d:ef:g:h:ij", 
                  long_options, &long_index )) != -1) {
       switch (opt) {
-           case 'a' : loraMode = atoi(optarg); 
+           case 'a' : loraMode = atoi(unistd::optarg); 
            						// from 1 to 10 (see https://github.com/CongducPham/LowCostLoRaGw#annexa-lora-mode-and-predefined-channels)
            						// for SX128X, BW 125, 250 and 500 are replaced respectively by BW 203, 406 and 812
            						// keep loraMode == 11 == LoRaWAN for the moment
                break;
-           case 'b' : optBW = atoi(optarg); 
+           case 'b' : optBW = atoi(unistd::optarg); 
                       // 7, 10, 15, 20, 31, 41, 62, 125, 250 or 500 for SX126X and SX127X_lora_gateway
                       // 125/200/203, 250/400/406, 500/800/812 or 1600/1625 for SX128X
                break;
-           case 'c' : optCR = atoi(optarg);
+           case 'c' : optCR = atoi(unistd::optarg);
                       // 5, 6, 7 or 8
                break;
-           case 'd' : optSF = atoi(optarg);
+           case 'd' : optSF = atoi(unistd::optarg);
                       // 5, 6, 7, 8, 9, 10, 11 or 12
                break;
            case 'e' : optRAW=true;
            						// no header
            						// required for LoRaWAN
                break;               
-           case 'f' : optFQ=atof(optarg)*1000000.0;
+           case 'f' : optFQ=atof(unistd::optarg)*1000000.0;
                       // optFQ in MHz e.g. 868.1
                break;     
-           case 'g' : optCH=atoi(optarg);
+           case 'g' : optCH=atoi(unistd::optarg);
                       if (optCH < STARTING_CHANNEL || optCH > ENDING_CHANNEL)
                         optCH=STARTING_CHANNEL;
                       optCH=optCH-STARTING_CHANNEL;  
@@ -1035,7 +1035,7 @@ int main (int argc, char *argv[]){
                       // pre-defined channels (see https://github.com/CongducPham/LowCostLoRaGw#annexa-lora-mode-and-predefined-channels)
                break;      
            case 'h' : { 
-           							uint8_t sw=atoi(optarg);
+           							uint8_t sw=atoi(unistd::optarg);
                       	// assume that sw is expressed in hex value
                       	optSW = (sw / 10)*16 + (sw % 10);
                       	// optSW is no longer used, it is not taken into account anymore
@@ -1073,7 +1073,7 @@ int main (int argc, char *argv[]){
 
 	if (bridge_map == MAP_FAILED) {
 		perror("mmap failed.");
-		close(fd);
+		unistd::close(fd);
 		return -3;
 	}
 
@@ -1091,10 +1091,10 @@ int main (int argc, char *argv[]){
 
 	if (result < 0) {
 		perror("Couldnt unmap bridge.");
-		close(fd);
+		unistd::close(fd);
 		return -4;
 	}
-	close(fd);
+	unistd::close(fd);
 	//######################################
   
   return (0);
