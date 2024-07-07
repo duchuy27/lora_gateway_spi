@@ -1,0 +1,30 @@
+{
+	"clouds" : [
+		{	
+			"name":"Local gateway MongoDB",	
+			"notice":"do not remove the MongoDB cloud declaration, just change enabled and max_months_to_store if needed",
+			"script":"python CloudMongoDB.py",
+			"type":"database",
+			"max_months_to_store":2,
+			"enabled":false
+		},		
+		{
+			"name":"WAZIUPv2",
+			"script":"python CloudWAZIUP.py",
+			"type":"iotcloud",
+			"enabled":false
+		},	        	        								
+		{	
+			"name":"ThingSpeak cloud",
+			"script":"python CloudThingSpeak.py",
+			"type":"iotcloud",			
+			"enabled":false
+		},
+		{	
+			"name":"Firebase cloud",
+			"script":"python CloudFireBase.py",
+			"type":"jsoncloud",			
+			"enabled":true
+		}			
+	]
+}
