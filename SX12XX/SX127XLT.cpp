@@ -5611,141 +5611,141 @@ uint32_t SX127XLT::returnBandwidth()
    state = 1  --> There has been an error while executing the command
    state = 0  --> No activity detected
    state < 0  --> Activity detected, return mean RSSI computed duuring CAD
-*/
-int8_t SX127XLT::doCAD(uint8_t counter)
-{
-#ifdef SX127XDEBUG1
-	PRINTLN_CSTSTR("doCAD()");
-#endif
+// */
+// int8_t SX127XLT::doCAD(uint8_t counter)
+// {
+// #ifdef SX127XDEBUG1
+// 	PRINTLN_CSTSTR("doCAD()");
+// #endif
 
-  uint8_t state = 1;
-	byte value = 0x00;
-	unsigned long startCAD, endCAD, startDoCad, endDoCad;
-	//unsigned long previous;
-	unsigned long exitTime;
-	uint16_t wait = 100;
-  bool activityDetected=false;
-	uint8_t retryCAD = 3;
-	uint8_t save_counter;
-	byte st0;
-	int rssi_count=0;
-	int rssi_mean=0;
-	bool hasRSSI=false;
-	unsigned long startRSSI=0;
+//   uint8_t state = 1;
+// 	byte value = 0x00;
+// 	unsigned long startCAD, endCAD, startDoCad, endDoCad;
+// 	//unsigned long previous;
+// 	unsigned long exitTime;
+// 	uint16_t wait = 100;
+//   bool activityDetected=false;
+// 	uint8_t retryCAD = 3;
+// 	uint8_t save_counter;
+// 	byte st0;
+// 	int rssi_count=0;
+// 	int rssi_mean=0;
+// 	bool hasRSSI=false;
+// 	unsigned long startRSSI=0;
 
-	// Symbol rate : time for one symbol (usecs)
-  //double ts = 1000000.0 / (double)returnBandwidth() / ( 1 << getLoRaSF());
-	double ts = 1000000.0*((double)( 1 << getLoRaSF()) / (double)returnBandwidth());
+// 	// Symbol rate : time for one symbol (usecs)
+//   //double ts = 1000000.0 / (double)returnBandwidth() / ( 1 << getLoRaSF());
+// 	double ts = 1000000.0*((double)( 1 << getLoRaSF()) / (double)returnBandwidth());
 	
-  st0 = readRegister(REG_OPMODE);	// Save the previous status
+//   st0 = readRegister(REG_OPMODE);	// Save the previous status
 
-	save_counter = counter;
+// 	save_counter = counter;
 
-	startDoCad=millis();
+// 	startDoCad=millis();
 
-	setMode(MODE_STDBY_RC);
+// 	setMode(MODE_STDBY_RC);
 
-	do {
+// 	do {
 
-		hasRSSI=false;
+// 		hasRSSI=false;
 
-		clearIrqStatus(IRQ_RADIO_ALL); // Initializing flags
+// 		clearIrqStatus(IRQ_RADIO_ALL); // Initializing flags
 
-		// wait to CadDone flag
-		// previous = millis();
-		startCAD = millis();
-		exitTime = millis()+(unsigned long)wait;
+// 		// wait to CadDone flag
+// 		// previous = millis();
+// 		startCAD = millis();
+// 		exitTime = millis()+(unsigned long)wait;
 
-    writeRegister(REG_OPMODE, 0x87);	// LORA mode - Cad
+//     writeRegister(REG_OPMODE, 0x87);	// LORA mode - Cad
 
-		startRSSI=micros();
+// 		startRSSI=micros();
 
-		value = readRegister(REG_IRQFLAGS);
-		// Wait until CAD ends (CAD Done flag) or the timeout expires
-		while ((bitRead(value, 2) == 0) && (millis() < exitTime))
-		{
-				// only one reading per CAD
-				if (micros()-startRSSI > ts+240 && !hasRSSI) {
-						uint8_t regdata=readRegister(REG_RSSIVALUE);
-            _RSSI = regdata - (OFFSET_RSSI + ((_Device == DEVICE_SX1272)?0:18));
-#ifdef SX127XDEBUGCAD
-						PRINT_CSTSTR("REG_RSSIVALUE: ");
-						PRINTLN_VALUE("%d", regdata);
-						PRINT_CSTSTR("_RSSI: ");
-						PRINTLN_VALUE("%d", _RSSI);						
-#endif              
-            rssi_mean += _RSSI;
-						rssi_count++;
-						hasRSSI=true;
-				}
+// 		value = readRegister(REG_IRQFLAGS);
+// 		// Wait until CAD ends (CAD Done flag) or the timeout expires
+// 		while ((bitRead(value, 2) == 0) && (millis() < exitTime))
+// 		{
+// 				// only one reading per CAD
+// 				if (micros()-startRSSI > ts+240 && !hasRSSI) {
+// 						uint8_t regdata=readRegister(REG_RSSIVALUE);
+//             _RSSI = regdata - (OFFSET_RSSI + ((_Device == DEVICE_SX1272)?0:18));
+// #ifdef SX127XDEBUGCAD
+// 						PRINT_CSTSTR("REG_RSSIVALUE: ");
+// 						PRINTLN_VALUE("%d", regdata);
+// 						PRINT_CSTSTR("_RSSI: ");
+// 						PRINTLN_VALUE("%d", _RSSI);						
+// #endif              
+//             rssi_mean += _RSSI;
+// 						rssi_count++;
+// 						hasRSSI=true;
+// 				}
 
-				value = readRegister(REG_IRQFLAGS);
-		}
+// 				value = readRegister(REG_IRQFLAGS);
+// 		}
 
-		state = 1;
+// 		state = 1;
 
-		endCAD = millis();
+// 		endCAD = millis();
 
-		if( bitRead(value, 2) == 1 )
-		{
-				state = 0;	// CAD successfully performed
-#ifdef SX127XDEBUG1					
-				PRINT_CSTSTR("CAD duration ");
-				PRINTLN_VALUE("%d",endCAD-startCAD);
-				PRINTLN_CSTSTR("CAD successfully performed");
-#endif					
+// 		if( bitRead(value, 2) == 1 )
+// 		{
+// 				state = 0;	// CAD successfully performed
+// #ifdef SX127XDEBUG1					
+// 				PRINT_CSTSTR("CAD duration ");
+// 				PRINTLN_VALUE("%d",endCAD-startCAD);
+// 				PRINTLN_CSTSTR("CAD successfully performed");
+// #endif					
 
-				value = readRegister(REG_IRQFLAGS);
+// 				value = readRegister(REG_IRQFLAGS);
 
-				// look for the CAD detected bit
-				if( bitRead(value, 0) == 1 )
-				{
-						// we detected activity
-            activityDetected=true;
-#ifdef SX127XDEBUG1							
-						PRINT_CSTSTR("CAD exits after ");
-						PRINTLN_VALUE("%d",save_counter-counter);
-#endif							
-				}
+// 				// look for the CAD detected bit
+// 				if( bitRead(value, 0) == 1 )
+// 				{
+// 						// we detected activity
+//             activityDetected=true;
+// #ifdef SX127XDEBUG1							
+// 						PRINT_CSTSTR("CAD exits after ");
+// 						PRINTLN_VALUE("%d",save_counter-counter);
+// #endif							
+// 				}
 
-				counter--;
-		}
-		else
-		{
-#ifdef SX127XDEBUG1						
-				PRINT_CSTSTR("CAD duration ");
-				PRINTLN_VALUE("%d",endCAD-startCAD);
-        PRINTLN_CSTSTR("Timeout has expired");
-#endif					
-				retryCAD--;
+// 				counter--;
+// 		}
+// 		else
+// 		{
+// #ifdef SX127XDEBUG1						
+// 				PRINT_CSTSTR("CAD duration ");
+// 				PRINTLN_VALUE("%d",endCAD-startCAD);
+//         PRINTLN_CSTSTR("Timeout has expired");
+// #endif					
+// 				retryCAD--;
 
-        // to many errors, so exit by indicating that channel is not free (state=1)
-				if (!retryCAD)
-            counter=0;
-		}
+//         // to many errors, so exit by indicating that channel is not free (state=1)
+// 				if (!retryCAD)
+//             counter=0;
+// 		}
 
-  } while (counter && !activityDetected);
+//   } while (counter && !activityDetected);
 
-	rssi_mean = rssi_mean / rssi_count;
-  _RSSI = rssi_mean;
+// 	rssi_mean = rssi_mean / rssi_count;
+//   _RSSI = rssi_mean;
 
-  writeRegister(REG_OPMODE, st0);
+//   writeRegister(REG_OPMODE, st0);
 
-	endDoCad=millis();
+// 	endDoCad=millis();
 
-  clearIrqStatus(IRQ_RADIO_ALL); 		// Initializing flags
+//   clearIrqStatus(IRQ_RADIO_ALL); 		// Initializing flags
 
-#ifdef SX127XDEBUG1		
-	PRINT_CSTSTR("doCAD duration ");
-	PRINTLN_VALUE("%d",endDoCad-startDoCad);
-#endif
+// #ifdef SX127XDEBUG1		
+// 	PRINT_CSTSTR("doCAD duration ");
+// 	PRINTLN_VALUE("%d",endDoCad-startDoCad);
+// #endif
 
-	//TODO C. Pham. returned value is actually positive?
-  if (activityDetected)
-      return _RSSI;
+// 	//TODO C. Pham. returned value is actually positive?
+//   if (activityDetected)
+//       return _RSSI;
 
-	return state;
-}
+// 	return state;
+// }
 
 #ifdef SX127XDEBUG3
 
@@ -5891,341 +5891,341 @@ void SX127XLT::CarrierSense(uint8_t cs, bool extendedIFS, bool onlyOnce) {
 
 // need to set cad_number to a value > 0
 // we advise using cad_number=3 for a SIFS and cad_number=9 for a DIFS
-void SX127XLT::CarrierSense1(uint8_t cad_number, bool extendedIFS, bool onlyOnce) {
+// void SX127XLT::CarrierSense1(uint8_t cad_number, bool extendedIFS, bool onlyOnce) {
 
-  int e;
-  uint8_t retries=3;
-  uint8_t DIFSretries=8;
-  uint8_t cad_value;
-  unsigned long _startDoCad, _endDoCad;
+//   int e;
+//   uint8_t retries=3;
+//   uint8_t DIFSretries=8;
+//   uint8_t cad_value;
+//   unsigned long _startDoCad, _endDoCad;
 
-  // symbol time in ms
-  double ts = 1000.0 / (returnBandwidth() / ( 1 << getLoRaSF()));
+//   // symbol time in ms
+//   double ts = 1000.0 / (returnBandwidth() / ( 1 << getLoRaSF()));
 
-  //approximate duration of a CAD, avoid having 0ms
-  cad_value=2*ts+1;
+//   //approximate duration of a CAD, avoid having 0ms
+//   cad_value=2*ts+1;
 
-  PRINT_CSTSTR("--> CS1\n");
+//   PRINT_CSTSTR("--> CS1\n");
 
-  if (cad_number) {
+//   if (cad_number) {
 
-    do {
-      DIFSretries=8;
-      do {
-        // check for free channel (SIFS/DIFS)
-        _startDoCad=millis();
-        e = doCAD(cad_number);
-        _endDoCad=millis();
+//     do {
+//       DIFSretries=8;
+//       do {
+//         // check for free channel (SIFS/DIFS)
+//         _startDoCad=millis();
+//         e = doCAD(cad_number);
+//         _endDoCad=millis();
 
-        PRINT_CSTSTR("--> CAD ");
-        PRINT_VALUE("%d",_endDoCad-_startDoCad);
-        PRINTLN;
+//         PRINT_CSTSTR("--> CAD ");
+//         PRINT_VALUE("%d",_endDoCad-_startDoCad);
+//         PRINTLN;
 
-        if (e==0) {
-            PRINT_CSTSTR("OK1\n");
+//         if (e==0) {
+//             PRINT_CSTSTR("OK1\n");
 
-            if (extendedIFS)  {
-                // wait for random number of CAD
-#ifdef ARDUINO                
-                uint8_t w = random(1,8);
-#else
-                uint8_t w = rand() % 8 + 1;
-#endif
-                PRINT_CSTSTR("--> wait for ");
-                PRINT_VALUE("%d",w);
-                PRINT_CSTSTR(" CAD = ");
-                PRINT_VALUE("%d",cad_value*w);
-                PRINTLN;
+//             if (extendedIFS)  {
+//                 // wait for random number of CAD
+// #ifdef ARDUINO                
+//                 uint8_t w = random(1,8);
+// #else
+//                 uint8_t w = rand() % 8 + 1;
+// #endif
+//                 PRINT_CSTSTR("--> wait for ");
+//                 PRINT_VALUE("%d",w);
+//                 PRINT_CSTSTR(" CAD = ");
+//                 PRINT_VALUE("%d",cad_value*w);
+//                 PRINTLN;
 
-                delay(cad_value*w);
+//                 delay(cad_value*w);
 
-                // check for free channel (SIFS/DIFS) once again
-                _startDoCad=millis();
-                e = doCAD(cad_number);
-                _endDoCad=millis();
+//                 // check for free channel (SIFS/DIFS) once again
+//                 _startDoCad=millis();
+//                 e = doCAD(cad_number);
+//                 _endDoCad=millis();
 
-                PRINT_CSTSTR("--> CAD ");
-                PRINT_VALUE("%d",_endDoCad-_startDoCad);
-                PRINTLN;
+//                 PRINT_CSTSTR("--> CAD ");
+//                 PRINT_VALUE("%d",_endDoCad-_startDoCad);
+//                 PRINTLN;
 
-                if (e==0) {
-                    PRINT_CSTSTR("OK2");
-                    return;	
-                }
-                else
-                    PRINT_CSTSTR("#2");
+//                 if (e==0) {
+//                     PRINT_CSTSTR("OK2");
+//                     return;	
+//                 }
+//                 else
+//                     PRINT_CSTSTR("#2");
 
-                PRINTLN;
-            }
-            return;
-        }
-        else {
-            PRINT_CSTSTR("#1\n");
+//                 PRINTLN;
+//             }
+//             return;
+//         }
+//         else {
+//             PRINT_CSTSTR("#1\n");
 
-            // if we have "only once" behavior then exit here to not have retries
-          	if (onlyOnce)
-          		return;  
+//             // if we have "only once" behavior then exit here to not have retries
+//           	if (onlyOnce)
+//           		return;  
           		
-            // wait for random number of DIFS
-#ifdef ARDUINO                
-            uint8_t w = random(1,8);
-#else
-            uint8_t w = rand() % 8 + 1;
-#endif
+//             // wait for random number of DIFS
+// #ifdef ARDUINO                
+//             uint8_t w = random(1,8);
+// #else
+//             uint8_t w = rand() % 8 + 1;
+// #endif
 
-            PRINT_CSTSTR("--> wait for ");
-            PRINT_VALUE("%d",w);
-            PRINT_CSTSTR(" DIFS=3SIFS= ");
-            PRINT_VALUE("%d",cad_value*3*w);
-            PRINTLN;
+//             PRINT_CSTSTR("--> wait for ");
+//             PRINT_VALUE("%d",w);
+//             PRINT_CSTSTR(" DIFS=3SIFS= ");
+//             PRINT_VALUE("%d",cad_value*3*w);
+//             PRINTLN;
 
-            delay(cad_value*3*w);
+//             delay(cad_value*3*w);
 
-            PRINT_CSTSTR("--> retry\n");
-        }
+//             PRINT_CSTSTR("--> retry\n");
+//         }
 
-      } while (e!=0 && --DIFSretries);
+//       } while (e!=0 && --DIFSretries);
 
-    } while (--retries);
+//     } while (--retries);
     
-    if (!retries)
-    	PRINT_CSTSTR("--> abort\n");    
-  }
-}
+//     if (!retries)
+//     	PRINT_CSTSTR("--> abort\n");    
+//   }
+// }
 
-void SX127XLT::CarrierSense2(uint8_t cad_number, bool extendedIFS) {
+// void SX127XLT::CarrierSense2(uint8_t cad_number, bool extendedIFS) {
 
-  int e;
-  uint8_t foundBusyDuringDIFSafterBusyState=0;
-  uint8_t retries=3;
-  uint8_t DIFSretries=8;
-  uint8_t n_collision=0;
-  // upper bound of the random backoff timer
-  uint8_t W=2;
-  uint32_t max_toa = getToA(255);
-  uint8_t cad_value;
-  unsigned long _startDoCad, _endDoCad;
+//   int e;
+//   uint8_t foundBusyDuringDIFSafterBusyState=0;
+//   uint8_t retries=3;
+//   uint8_t DIFSretries=8;
+//   uint8_t n_collision=0;
+//   // upper bound of the random backoff timer
+//   uint8_t W=2;
+//   uint32_t max_toa = getToA(255);
+//   uint8_t cad_value;
+//   unsigned long _startDoCad, _endDoCad;
 
-  // symbol time in ms
-  double ts = 1000.0 / (returnBandwidth() / ( 1 << getLoRaSF()));
+//   // symbol time in ms
+//   double ts = 1000.0 / (returnBandwidth() / ( 1 << getLoRaSF()));
 
-  //approximate duration of a CAD, avoid having 0ms
-  cad_value=2*ts+1;
+//   //approximate duration of a CAD, avoid having 0ms
+//   cad_value=2*ts+1;
 
-  // do CAD for DIFS=9CAD
-  PRINT_CSTSTR("--> CS2\n");
+//   // do CAD for DIFS=9CAD
+//   PRINT_CSTSTR("--> CS2\n");
 
-  if (cad_number) {
+//   if (cad_number) {
 
-    do {
-      DIFSretries=8;
-      do {
-        //D f W
-        //2 2 4
-        //3 3 8
-        //4 4 16
-        //5 5 16
-        //6 6 16
-        //...
+//     do {
+//       DIFSretries=8;
+//       do {
+//         //D f W
+//         //2 2 4
+//         //3 3 8
+//         //4 4 16
+//         //5 5 16
+//         //6 6 16
+//         //...
 
-        if (foundBusyDuringDIFSafterBusyState>1 && foundBusyDuringDIFSafterBusyState<5)
-          W=W*2;
+//         if (foundBusyDuringDIFSafterBusyState>1 && foundBusyDuringDIFSafterBusyState<5)
+//           W=W*2;
 
-        // check for free channel (SIFS/DIFS)
-        _startDoCad=millis();
-        e = doCAD(cad_number);
-        _endDoCad=millis();
+//         // check for free channel (SIFS/DIFS)
+//         _startDoCad=millis();
+//         e = doCAD(cad_number);
+//         _endDoCad=millis();
 
-        PRINT_CSTSTR("--> DIFS ");
-        PRINT_VALUE("%d",_endDoCad-_startDoCad);
-        PRINTLN;
+//         PRINT_CSTSTR("--> DIFS ");
+//         PRINT_VALUE("%d",_endDoCad-_startDoCad);
+//         PRINTLN;
 
-        // successull SIFS/DIFS
-        if (e==0) {
-          // previous collision detected
-          if (n_collision) {
-            PRINT_CSTSTR("--> count for ");
-            // count for random number of CAD/SIFS/DIFS?
-            // SIFS=3CAD
-            // DIFS=9CAD
-#ifdef ARDUINO            
-            uint8_t w = random(0,W*cad_number);
-#else
-            uint8_t w = rand() % (W*cad_number) + 1;
-#endif
-            PRINTLN_VALUE("%d",w);
+//         // successull SIFS/DIFS
+//         if (e==0) {
+//           // previous collision detected
+//           if (n_collision) {
+//             PRINT_CSTSTR("--> count for ");
+//             // count for random number of CAD/SIFS/DIFS?
+//             // SIFS=3CAD
+//             // DIFS=9CAD
+// #ifdef ARDUINO            
+//             uint8_t w = random(0,W*cad_number);
+// #else
+//             uint8_t w = rand() % (W*cad_number) + 1;
+// #endif
+//             PRINTLN_VALUE("%d",w);
 
-            int busyCount=0;
-            bool nowBusy=false;
+//             int busyCount=0;
+//             bool nowBusy=false;
 
-            do {
-              if (nowBusy)
-                  e = doCAD(cad_number);
-              else
-                  e = doCAD(1);
+//             do {
+//               if (nowBusy)
+//                   e = doCAD(cad_number);
+//               else
+//                   e = doCAD(1);
 
-              if (nowBusy && e!=0) {
-                  PRINT_CSTSTR("#");
-                  busyCount++;
-              }
-              else if (nowBusy && e==0) {
-                  PRINT_CSTSTR("|");
-                  nowBusy=false;
-              }
-              else if (e==0) {
-                  w--;
-                  PRINT_CSTSTR("-");
-              }
-              else {
-                  PRINT_CSTSTR("*");
-                  nowBusy=true;
-                  busyCount++;
-              }
+//               if (nowBusy && e!=0) {
+//                   PRINT_CSTSTR("#");
+//                   busyCount++;
+//               }
+//               else if (nowBusy && e==0) {
+//                   PRINT_CSTSTR("|");
+//                   nowBusy=false;
+//               }
+//               else if (e==0) {
+//                   w--;
+//                   PRINT_CSTSTR("-");
+//               }
+//               else {
+//                   PRINT_CSTSTR("*");
+//                   nowBusy=true;
+//                   busyCount++;
+//               }
 
-            } while (w);
+//             } while (w);
 
-              // if w==0 then we exit and
-              // the packet will be sent
-              PRINTLN;
-              PRINT_CSTSTR("--> busy during ");
-              PRINTLN_VALUE("%d",busyCount);
-          }
-          else {
-            PRINTLN_CSTSTR("OK1");
+//               // if w==0 then we exit and
+//               // the packet will be sent
+//               PRINTLN;
+//               PRINT_CSTSTR("--> busy during ");
+//               PRINTLN_VALUE("%d",busyCount);
+//           }
+//           else {
+//             PRINTLN_CSTSTR("OK1");
 
-            if (extendedIFS)  {
-              // wait for random number of CAD
-#ifdef ARDUINO                
-              uint8_t w = random(1,8);
-#else
-              uint8_t w = rand() % 8 + 1;
-#endif
+//             if (extendedIFS)  {
+//               // wait for random number of CAD
+// #ifdef ARDUINO                
+//               uint8_t w = random(1,8);
+// #else
+//               uint8_t w = rand() % 8 + 1;
+// #endif
 
-              PRINT_CSTSTR("--> extended wait for ");
-              PRINTLN_VALUE("%d",w);
-              PRINT_CSTSTR(" CAD = ");
-              PRINTLN_VALUE("%d",cad_value*w);
+//               PRINT_CSTSTR("--> extended wait for ");
+//               PRINTLN_VALUE("%d",w);
+//               PRINT_CSTSTR(" CAD = ");
+//               PRINTLN_VALUE("%d",cad_value*w);
 
-              delay(cad_value*w);
+//               delay(cad_value*w);
 
-              // check for free channel (SIFS/DIFS) once again
-              _startDoCad=millis();
-              e = doCAD(cad_number);
-              _endDoCad=millis();
+//               // check for free channel (SIFS/DIFS) once again
+//               _startDoCad=millis();
+//               e = doCAD(cad_number);
+//               _endDoCad=millis();
 
-              PRINT_CSTSTR("--> CAD ");
-              PRINTLN_VALUE("%d",_endDoCad-_startDoCad);
+//               PRINT_CSTSTR("--> CAD ");
+//               PRINTLN_VALUE("%d",_endDoCad-_startDoCad);
 
-              if (e==0) {
-                  PRINT_CSTSTR("OK2");
-                  return;	
-              }
-              else
-                  PRINT_CSTSTR("#2");
+//               if (e==0) {
+//                   PRINT_CSTSTR("OK2");
+//                   return;	
+//               }
+//               else
+//                   PRINT_CSTSTR("#2");
 
-              PRINTLN;
-            }
-            return;
-          }
-        }
-        else {
-          n_collision++;
-          foundBusyDuringDIFSafterBusyState++;
-          PRINT_CSTSTR("###");
-          PRINTLN_VALUE("%d",n_collision);
+//               PRINTLN;
+//             }
+//             return;
+//           }
+//         }
+//         else {
+//           n_collision++;
+//           foundBusyDuringDIFSafterBusyState++;
+//           PRINT_CSTSTR("###");
+//           PRINTLN_VALUE("%d",n_collision);
 
-          PRINTLN_CSTSTR("--> CAD until clear");
+//           PRINTLN_CSTSTR("--> CAD until clear");
 
-          int busyCount=0;
+//           int busyCount=0;
 
-          _startDoCad=millis();
-          do {
-            e = doCAD(1);
+//           _startDoCad=millis();
+//           do {
+//             e = doCAD(1);
 
-            if (e!=0) {
-                PRINT_CSTSTR("R");
-                busyCount++;
-            }
-          } while (e!=0 && (millis()-_startDoCad < 2*max_toa)); 
+//             if (e!=0) {
+//                 PRINT_CSTSTR("R");
+//                 busyCount++;
+//             }
+//           } while (e!=0 && (millis()-_startDoCad < 2*max_toa)); 
 
-          _endDoCad=millis();
+//           _endDoCad=millis();
 
-          PRINTLN;
-          PRINT_CSTSTR("--> busy during ");
-          PRINTLN_VALUE("%d",busyCount);
+//           PRINTLN;
+//           PRINT_CSTSTR("--> busy during ");
+//           PRINTLN_VALUE("%d",busyCount);
 
-          PRINT_CSTSTR("--> wait ");
-          PRINTLN_VALUE("%d",_endDoCad-_startDoCad);
+//           PRINT_CSTSTR("--> wait ");
+//           PRINTLN_VALUE("%d",_endDoCad-_startDoCad);
 
-          // to perform a new DIFS
-          PRINTLN_CSTSTR("--> retry");
-          e=1;
-        }
-      } while (e!=0 && --DIFSretries);
-    } while (--retries);
+//           // to perform a new DIFS
+//           PRINTLN_CSTSTR("--> retry");
+//           e=1;
+//         }
+//       } while (e!=0 && --DIFSretries);
+//     } while (--retries);
 
-    if (!retries)
-    	PRINT_CSTSTR("--> abort\n");     
-  }
-}
+//     if (!retries)
+//     	PRINT_CSTSTR("--> abort\n");     
+//   }
+// }
 
-void SX127XLT::CarrierSense3(uint8_t cad_number) {
+// void SX127XLT::CarrierSense3(uint8_t cad_number) {
 
-  int e;
-  bool carrierSenseRetry=false;
-  uint8_t n_collision=0;
-  uint8_t retries=3;
-  uint8_t n_cad=9;
-  uint32_t max_toa = getToA(255);
-  unsigned long _startDoCad, _endDoCad;
+//   int e;
+//   bool carrierSenseRetry=false;
+//   uint8_t n_collision=0;
+//   uint8_t retries=3;
+//   uint8_t n_cad=9;
+//   uint32_t max_toa = getToA(255);
+//   unsigned long _startDoCad, _endDoCad;
 
-  PRINTLN_CSTSTR("--> CS3");
+//   PRINTLN_CSTSTR("--> CS3");
 
-  //unsigned long end_carrier_sense=0;
+//   //unsigned long end_carrier_sense=0;
 
-  if (cad_number) {
-    do {
-      PRINT_CSTSTR("--> CAD for MaxToa=");
-      PRINTLN_VALUE("%d",max_toa);
+//   if (cad_number) {
+//     do {
+//       PRINT_CSTSTR("--> CAD for MaxToa=");
+//       PRINTLN_VALUE("%d",max_toa);
 
-      //end_carrier_sense=millis()+(max_toa/n_cad)*(n_cad-1);
+//       //end_carrier_sense=millis()+(max_toa/n_cad)*(n_cad-1);
 
-      for (int i=0; i<n_cad; i++) {
-        _startDoCad=millis();
-        e = doCAD(1);
-        _endDoCad=millis();
+//       for (int i=0; i<n_cad; i++) {
+//         _startDoCad=millis();
+//         e = doCAD(1);
+//         _endDoCad=millis();
 
-        if (e==0) {
-          PRINT_VALUE("%d",_endDoCad);
-          PRINT_CSTSTR(" 0 ");
-          PRINT_VALUE("%d",_RSSI);
-          PRINT_CSTSTR(" ");
-          PRINTLN_VALUE("%d",_endDoCad-_startDoCad);
-        }
-        else
-            continue;
+//         if (e==0) {
+//           PRINT_VALUE("%d",_endDoCad);
+//           PRINT_CSTSTR(" 0 ");
+//           PRINT_VALUE("%d",_RSSI);
+//           PRINT_CSTSTR(" ");
+//           PRINTLN_VALUE("%d",_endDoCad-_startDoCad);
+//         }
+//         else
+//             continue;
 
-        // wait in order to have n_cad CAD operations during max_toa
-        delay(max_toa/(n_cad-1)-(millis()-_startDoCad));
-      }
+//         // wait in order to have n_cad CAD operations during max_toa
+//         delay(max_toa/(n_cad-1)-(millis()-_startDoCad));
+//       }
 
-      if (e!=0) {
-        n_collision++;
-        PRINT_CSTSTR("#");
-        PRINTLN_VALUE("%d",n_collision);
+//       if (e!=0) {
+//         n_collision++;
+//         PRINT_CSTSTR("#");
+//         PRINTLN_VALUE("%d",n_collision);
 
-        PRINT_CSTSTR("Busy. Wait MaxToA=");
-        PRINTLN_VALUE("%d",max_toa);
-        delay(max_toa);
-        // to perform a new max_toa waiting
-        PRINTLN_CSTSTR("--> retry");
-        carrierSenseRetry=true;
-      }
-      else
-        carrierSenseRetry=false;
-    } while (carrierSenseRetry && --retries);
-  }
-}
+//         PRINT_CSTSTR("Busy. Wait MaxToA=");
+//         PRINTLN_VALUE("%d",max_toa);
+//         delay(max_toa);
+//         // to perform a new max_toa waiting
+//         PRINTLN_CSTSTR("--> retry");
+//         carrierSenseRetry=true;
+//       }
+//       else
+//         carrierSenseRetry=false;
+//     } while (carrierSenseRetry && --retries);
+//   }
+// }
 
 uint8_t SX127XLT::transmitRTSAddressed(uint8_t pl) {
 

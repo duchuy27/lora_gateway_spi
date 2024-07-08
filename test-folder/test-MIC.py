@@ -91,7 +91,7 @@ transmitted LoRaWAN-like packet:
 MHDR[1] | DevAddr[4] | FCtrl[1] | FCnt[2] | FPort[1] | EncryptedPayload | MIC[4]
 40 64 01 00 00 00 00 00 01 6A 4C 71 E9 A5 C3 B6 76 28 
 end-device uses encapsulated LoRaWAN packet format only for encryption
---> CarrierSense1
+# --> CarrierSense1
 --> CAD duration 553
 OK1
 --> waiting for 1 CAD = 62
