@@ -494,41 +494,41 @@ char * SerialPi::int2oct(int i){
  * Public methods *
  ******************/
 
-SPIPi::SPIPi(){
+// SPIPi::SPIPi(){
 
-}
+// }
 
-void SPIPi::begin(){
-	// Init SPI
-  	wiringPiSPISetup(SPI_CHANNEL, 500000);
-}
+// void SPIPi::begin(){
+// 	// Init SPI
+//   	wiringPiSPISetup(SPI_CHANNEL, 500000);
+// }
 
-void SPIPi::end(){  
+// void SPIPi::end(){  
 
-}
-// Writes (and reads) a single byte to SPI
-// WARNING. With wiringPi, it seems not possible to make successive calls to SPI.transfer to send a series of bytes on the SPI bus
-// it is recommended to use SPI.transfernb
-uint8_t SPIPi::transfer(uint8_t value) {
+// }
+// // Writes (and reads) a single byte to SPI
+// // WARNING. With wiringPi, it seems not possible to make successive calls to SPI.transfer to send a series of bytes on the SPI bus
+// // it is recommended to use SPI.transfernb
+// uint8_t SPIPi::transfer(uint8_t value) {
 
-    uint8_t spibuf[1];
-    spibuf[0] = value;
-    //spibuf[1] = 0x00;
+//     uint8_t spibuf[1];
+//     spibuf[0] = value;
+//     //spibuf[1] = 0x00;
 
-  	wiringPiSPIDataRW(SPI_CHANNEL, spibuf, 1);
+//   	wiringPiSPIDataRW(SPI_CHANNEL, spibuf, 1);
   
-  	return spibuf[0];
-}
+//   	return spibuf[0];
+// }
 
-void SPIPi::transfernb(char* tbuf, char* rbuf, uint32_t len) {
+// void SPIPi::transfernb(char* tbuf, char* rbuf, uint32_t len) {
 
-		wiringPiSPIDataRW(SPI_CHANNEL, (uint8_t*)tbuf, len);
+// 		wiringPiSPIDataRW(SPI_CHANNEL, (uint8_t*)tbuf, len);
 		
-		if (rbuf!=NULL) {
-			for (int i=0; i<len; i++)
-				rbuf[i]=tbuf[i];
-		}
-}
+// 		if (rbuf!=NULL) {
+// 			for (int i=0; i<len; i++)
+// 				rbuf[i]=tbuf[i];
+// 		}
+// }
 void delay(long millis){
 	unistd::usleep(millis*1000);
 }
