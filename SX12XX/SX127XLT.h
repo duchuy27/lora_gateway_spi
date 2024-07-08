@@ -26,7 +26,7 @@ class SX127XLT
     SX127XLT();
     //bool begin(int8_t pinNSS, int8_t pinNRESET, int8_t pinDIO0, int8_t pinDIO1, int8_t pinDIO2, uint8_t device);
     //bool begin(int8_t pinNSS, int8_t pinNRESET, int8_t pinDIO0, uint8_t device);
-    void resetDevice();
+    //void resetDevice();
     void setMode(uint8_t modeconfig);         //same function as setStandby()
     void setSleep(uint8_t sleepconfig);
     bool checkDevice();
@@ -37,7 +37,7 @@ class SX127XLT
 
     void setDevice(uint8_t type);
     void printDevice();
-    uint8_t getOperatingMode();
+    //uint8_t getOperatingMode();
     bool isReceiveDone();                      //reads first DIO pin defined
     bool isTransmitDone();                     //reads first DIO pin defined
 
@@ -100,8 +100,8 @@ class SX127XLT
     void printHEXByte(uint8_t temp);
     void printHEXByte0x(uint8_t temp);
 
-    bool isRXdone();
-    bool isTXdone();
+    //bool isRXdone();
+    //bool isTXdone();
     bool isRXdoneIRQ();
     bool isTXdoneIRQ();
     void setTXDonePin(uint8_t pin);
@@ -156,7 +156,7 @@ class SX127XLT
     uint32_t transmitReliable(uint8_t *txbuffer, uint8_t size, char txpackettype, char txdestination, char txsource, uint32_t txtimeout, int8_t txpower, uint8_t wait );
     uint16_t addCRC(uint8_t data, uint16_t libraryCRC);
     uint32_t receiveReliable(uint8_t *rxbuffer, uint8_t size, char packettype, char destination, char source, uint32_t rxtimeout, uint8_t wait );
-    uint32_t receiveFT(uint8_t *rxbuffer, uint8_t size, char packettype, char destination, char source, uint32_t rxtimeout, uint8_t wait );
+    //uint32_t receiveFT(uint8_t *rxbuffer, uint8_t size, char packettype, char destination, char source, uint32_t rxtimeout, uint8_t wait );
 
     uint32_t returnBandwidth();
     int8_t doCAD(uint8_t counter);
