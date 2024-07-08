@@ -140,13 +140,13 @@ class SX127XLT
     void setSyncWord(uint8_t syncword);
     void setTXDirect();
     void setupDirect(uint32_t frequency, int32_t offset);
-    void toneFM(uint16_t frequency, uint32_t length, uint32_t deviation, float adjust, int8_t txpower);
+    //void toneFM(uint16_t frequency, uint32_t length, uint32_t deviation, float adjust, int8_t txpower);
     int8_t getDeviceTemperature();
     void fskCarrierOn(int8_t txpower);
-    void fskCarrierOff();
+    //void fskCarrierOff();
     void setRfFrequencyDirect(uint8_t high, uint8_t mid, uint8_t low);
-    void getRfFrequencyRegisters(uint8_t *buff);
-    void startFSKRTTY(uint32_t freqshift, uint8_t pips, uint16_t pipDelaymS, uint16_t pipPeriodmS, uint16_t leadinmS);
+    //void getRfFrequencyRegisters(uint8_t *buff);
+    //void startFSKRTTY(uint32_t freqshift, uint8_t pips, uint16_t pipDelaymS, uint16_t pipPeriodmS, uint16_t leadinmS);
     void transmitFSKRTTY(uint8_t chartosend, uint8_t databits, uint8_t stopbits, uint8_t parity, uint16_t baudPerioduS, int8_t pin);
     void transmitFSKRTTY(uint8_t chartosend, uint16_t baudPerioduS, int8_t pin);
     void printRTTYregisters();

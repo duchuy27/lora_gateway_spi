@@ -89,7 +89,7 @@ bool SX127XLT::begin(int8_t pinNSS, int8_t pinNRESET, int8_t pinDIO0, int8_t pin
 #endif
 
 #if not defined ARDUINO && not defined USE_ARDUPI
-  wiringPiSetup() ;
+  //wiringPiSetup() ;
   PRINTLN_CSTSTR("<<< using wiringPi >>>"); 
 #endif
 
@@ -157,7 +157,7 @@ bool SX127XLT::begin(int8_t pinNSS, int8_t pinNRESET, int8_t pinDIO0, uint8_t de
 #endif
 
 #if not defined ARDUINO && not defined USE_ARDUPI
-  wiringPiSetup() ;
+ // wiringPiSetup() ;
   PRINTLN_CSTSTR("<<< using wiringPi >>>");   
 #endif
 
@@ -4594,175 +4594,175 @@ void SX127XLT::setTXDirect()
 }
 
 
-void SX127XLT::toneFM(uint16_t frequency, uint32_t length, uint32_t deviation, float adjust, int8_t txpower)
-{
-#ifdef SX127XDEBUG1
-  PRINT_CSTSTR("toneFM()");
-#endif
+// void SX127XLT::toneFM(uint16_t frequency, uint32_t length, uint32_t deviation, float adjust, int8_t txpower)
+// {
+// #ifdef SX127XDEBUG1
+//   PRINT_CSTSTR("toneFM()");
+// #endif
 
-  uint16_t index;
-  uint32_t ToneDelayus;
-  uint32_t registershift;
-  uint32_t freqreg;
-  uint32_t shiftedfreqregH, shiftedfreqregL;
-  uint32_t loopcount;
-  uint8_t freqregH, freqregM, freqregL;
+//   uint16_t index;
+//   uint32_t ToneDelayus;
+//   uint32_t registershift;
+//   uint32_t freqreg;
+//   uint32_t shiftedfreqregH, shiftedfreqregL;
+//   uint32_t loopcount;
+//   uint8_t freqregH, freqregM, freqregL;
 
-  #ifdef USE_SPI_TRANSACTION         //to use SPI_TRANSACTION enable define at beginning of CPP file 
-  SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
-  #endif
+//   #ifdef USE_SPI_TRANSACTION         //to use SPI_TRANSACTION enable define at beginning of CPP file 
+//   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
+//   #endif
   
-  digitalWrite(_NSS, LOW);           //set NSS low
-#if defined ARDUINO || defined USE_ARDUPI  
-  SPI.transfer(REG_FRMSB & 0x7F);    //mask address for read
-  freqregH = SPI.transfer(0);
-  freqregM = SPI.transfer(0);
-  freqregL = SPI.transfer(0);
-#else
-	uint8_t spibuf[4];
-	spibuf[0] = REG_FRMSB & 0x7F;
-	spibuf[1] = 0x00;
-	spibuf[2] = 0x00;
-	spibuf[3] = 0x00;		
+//   digitalWrite(_NSS, LOW);           //set NSS low
+// #if defined ARDUINO || defined USE_ARDUPI  
+//   SPI.transfer(REG_FRMSB & 0x7F);    //mask address for read
+//   freqregH = SPI.transfer(0);
+//   freqregM = SPI.transfer(0);
+//   freqregL = SPI.transfer(0);
+// #else
+// 	uint8_t spibuf[4];
+// 	spibuf[0] = REG_FRMSB & 0x7F;
+// 	spibuf[1] = 0x00;
+// 	spibuf[2] = 0x00;
+// 	spibuf[3] = 0x00;		
 
-	wiringPiSPIDataRW(SPI_CHANNEL, spibuf, 4);
+// 	wiringPiSPIDataRW(SPI_CHANNEL, spibuf, 4);
 
-  freqregH = spibuf[1];
-  freqregM = spibuf[2];
-  freqregL = spibuf[3];	
-#endif  
-  digitalWrite(_NSS, HIGH);          //set NSS high
+//   freqregH = spibuf[1];
+//   freqregM = spibuf[2];
+//   freqregL = spibuf[3];	
+// #endif  
+//   digitalWrite(_NSS, HIGH);          //set NSS high
   
-#ifdef USE_SPI_TRANSACTION
-  SPI.endTransaction();
-#endif
+// #ifdef USE_SPI_TRANSACTION
+//   SPI.endTransaction();
+// #endif
     
-  freqreg = ( ( (uint32_t) freqregH << 16 ) | ( (uint32_t) freqregM << 8 ) | ( freqregL ) );
+//   freqreg = ( ( (uint32_t) freqregH << 16 ) | ( (uint32_t) freqregM << 8 ) | ( freqregL ) );
 
-  registershift = deviation / FREQ_STEP;
-  shiftedfreqregH = freqreg + registershift;
-  shiftedfreqregL = freqreg - registershift;
+//   registershift = deviation / FREQ_STEP;
+//   shiftedfreqregH = freqreg + registershift;
+//   shiftedfreqregL = freqreg - registershift;
 
-  uint8_t ShiftH = shiftedfreqregH >> 16;
-  uint8_t ShiftM = shiftedfreqregH >> 8;
-  uint8_t ShiftL = shiftedfreqregH;
-  uint8_t NoShiftH = shiftedfreqregL >> 16;
-  uint8_t NoShiftM = shiftedfreqregL >> 8;
-  uint8_t NoShiftL = shiftedfreqregL;
+//   uint8_t ShiftH = shiftedfreqregH >> 16;
+//   uint8_t ShiftM = shiftedfreqregH >> 8;
+//   uint8_t ShiftL = shiftedfreqregH;
+//   uint8_t NoShiftH = shiftedfreqregL >> 16;
+//   uint8_t NoShiftM = shiftedfreqregL >> 8;
+//   uint8_t NoShiftL = shiftedfreqregL;
 
-  ToneDelayus = ((500000 / frequency));
-  loopcount = (length * 500) / (ToneDelayus);
-  ToneDelayus = ToneDelayus * adjust;
+//   ToneDelayus = ((500000 / frequency));
+//   loopcount = (length * 500) / (ToneDelayus);
+//   ToneDelayus = ToneDelayus * adjust;
 
-#ifdef SX127XDEBUG3
-  PRINT_CSTSTR("frequency ");
-  PRINTLN_VALUE("%lu",frequency);
-  PRINT_CSTSTR("length ");
-  PRINTLN_VALUE("%ld",length);
+// #ifdef SX127XDEBUG3
+//   PRINT_CSTSTR("frequency ");
+//   PRINTLN_VALUE("%lu",frequency);
+//   PRINT_CSTSTR("length ");
+//   PRINTLN_VALUE("%ld",length);
 
-  PRINT_CSTSTR("freqreg ");
-  PRINTLN_HEX("%lX",freqreg);
-  PRINT_CSTSTR("registershift ");
-  PRINTLN_VALUE("%ld",registershift);
-  shiftedfreqregH = freqreg + (registershift / 2);
-  shiftedfreqregL = freqreg - (registershift / 2);
-  PRINT_CSTSTR("shiftedfreqregH ");
-  PRINTLN_HEX("%lX",shiftedfreqregH);
-  PRINT_CSTSTR("shiftedfreqregL ");
-  PRINTLN_HEX("%lX",shiftedfreqregL);
+//   PRINT_CSTSTR("freqreg ");
+//   PRINTLN_HEX("%lX",freqreg);
+//   PRINT_CSTSTR("registershift ");
+//   PRINTLN_VALUE("%ld",registershift);
+//   shiftedfreqregH = freqreg + (registershift / 2);
+//   shiftedfreqregL = freqreg - (registershift / 2);
+//   PRINT_CSTSTR("shiftedfreqregH ");
+//   PRINTLN_HEX("%lX",shiftedfreqregH);
+//   PRINT_CSTSTR("shiftedfreqregL ");
+//   PRINTLN_HEX("%lX",shiftedfreqregL);
 
-  PRINT_CSTSTR("ShiftedHigh,");
-  PRINT_HEX("%X",ShiftH);
-  PRINT_CSTSTR(",");
-  PRINT_HEX("%X",ShiftM);
-  PRINT_CSTSTR(",");
-  PRINTLN_HEX("%X",ShiftL);
+//   PRINT_CSTSTR("ShiftedHigh,");
+//   PRINT_HEX("%X",ShiftH);
+//   PRINT_CSTSTR(",");
+//   PRINT_HEX("%X",ShiftM);
+//   PRINT_CSTSTR(",");
+//   PRINTLN_HEX("%X",ShiftL);
 
-  PRINT_CSTSTR("ShiftedLow,");
-  PRINT_HEX("%X",NoShiftH);
-  PRINT_CSTSTR(",");
-  PRINT_HEX("%X",NoShiftM);
-  PRINT_CSTSTR(",");
-  PRINTLN_HEX("%X",NoShiftL);
-  PRINT_CSTSTR("ToneDelayus,");
-  PRINTLN_VALUE("%ld",ToneDelayus);
-  PRINT_CSTSTR("loopcount,");
-  PRINTLN_VALUE("%ld",loopcount);
-  PRINTLN;
-  PRINTLN;
-#endif
+//   PRINT_CSTSTR("ShiftedLow,");
+//   PRINT_HEX("%X",NoShiftH);
+//   PRINT_CSTSTR(",");
+//   PRINT_HEX("%X",NoShiftM);
+//   PRINT_CSTSTR(",");
+//   PRINTLN_HEX("%X",NoShiftL);
+//   PRINT_CSTSTR("ToneDelayus,");
+//   PRINTLN_VALUE("%ld",ToneDelayus);
+//   PRINT_CSTSTR("loopcount,");
+//   PRINTLN_VALUE("%ld",loopcount);
+//   PRINTLN;
+//   PRINTLN;
+// #endif
 
-  writeRegister(REG_PLLHOP, 0xAD);            //set fast hop mode, needed for fast changes of frequency
+//   writeRegister(REG_PLLHOP, 0xAD);            //set fast hop mode, needed for fast changes of frequency
   
-  setTxParams(txpower, RADIO_RAMP_DEFAULT);
-  setTXDirect();
+//   setTxParams(txpower, RADIO_RAMP_DEFAULT);
+//   setTXDirect();
  
-  #ifdef USE_SPI_TRANSACTION         //to use SPI_TRANSACTION enable define at beginning of CPP file 
-  SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
-  #endif
+//   #ifdef USE_SPI_TRANSACTION         //to use SPI_TRANSACTION enable define at beginning of CPP file 
+//   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
+//   #endif
   
-  for (index = 1; index <= loopcount; index++)
-  {
-    digitalWrite(_NSS, LOW);                  //set NSS low
-#if defined ARDUINO || defined USE_ARDUPI    
-    SPI.transfer(0x86);                       //address for write to REG_FRMSB
-    SPI.transfer(ShiftH);
-    SPI.transfer(ShiftM);
-    SPI.transfer(ShiftL);
-#else
-	uint8_t spibuf[4];
-	spibuf[0] = 0x86;
-	spibuf[1] = ShiftH;
-	spibuf[2] = ShiftM;
-	spibuf[3] = ShiftL;		
+//   for (index = 1; index <= loopcount; index++)
+//   {
+//     digitalWrite(_NSS, LOW);                  //set NSS low
+// #if defined ARDUINO || defined USE_ARDUPI    
+//     SPI.transfer(0x86);                       //address for write to REG_FRMSB
+//     SPI.transfer(ShiftH);
+//     SPI.transfer(ShiftM);
+//     SPI.transfer(ShiftL);
+// #else
+// 	uint8_t spibuf[4];
+// 	spibuf[0] = 0x86;
+// 	spibuf[1] = ShiftH;
+// 	spibuf[2] = ShiftM;
+// 	spibuf[3] = ShiftL;		
 
-	wiringPiSPIDataRW(SPI_CHANNEL, spibuf, 4);
-#endif    
-    digitalWrite(_NSS, HIGH);                 //set NSS high
-    delayMicroseconds(ToneDelayus);
+// 	wiringPiSPIDataRW(SPI_CHANNEL, spibuf, 4);
+// #endif    
+//     digitalWrite(_NSS, HIGH);                 //set NSS high
+//     delayMicroseconds(ToneDelayus);
 
-    digitalWrite(_NSS, LOW);                  //set NSS low
-#if defined ARDUINO || defined USE_ARDUPI    
-    SPI.transfer(0x86);                       //address for write to REG_FRMSB
-    SPI.transfer(NoShiftH);
-    SPI.transfer(NoShiftM);
-    SPI.transfer(NoShiftL);
-#else
-	spibuf[0] = 0x86;
-	spibuf[1] = NoShiftH;
-	spibuf[2] = NoShiftM;
-	spibuf[3] = NoShiftL;		
+//     digitalWrite(_NSS, LOW);                  //set NSS low
+// #if defined ARDUINO || defined USE_ARDUPI    
+//     SPI.transfer(0x86);                       //address for write to REG_FRMSB
+//     SPI.transfer(NoShiftH);
+//     SPI.transfer(NoShiftM);
+//     SPI.transfer(NoShiftL);
+// #else
+// 	spibuf[0] = 0x86;
+// 	spibuf[1] = NoShiftH;
+// 	spibuf[2] = NoShiftM;
+// 	spibuf[3] = NoShiftL;		
 
-	wiringPiSPIDataRW(SPI_CHANNEL, spibuf, 4);
-#endif    
-    digitalWrite(_NSS, HIGH);                 //set NSS high
+// 	wiringPiSPIDataRW(SPI_CHANNEL, spibuf, 4);
+// #endif    
+//     digitalWrite(_NSS, HIGH);                 //set NSS high
 
-    delayMicroseconds(ToneDelayus);
-  }
-  //now set the frequency registers back to centre
-  digitalWrite(_NSS, LOW);                  //set NSS low
-#if defined ARDUINO || defined USE_ARDUPI  
-  SPI.transfer(0x86);                       //address for write to REG_FRMSB
-  SPI.transfer(freqregH);
-  SPI.transfer(freqregM);
-  SPI.transfer(freqregL);
-#else
-	spibuf[0] = 0x86;
-	spibuf[1] = freqregH;
-	spibuf[2] = freqregM;
-	spibuf[3] = freqregL;		
+//     delayMicroseconds(ToneDelayus);
+//   }
+//   //now set the frequency registers back to centre
+//   digitalWrite(_NSS, LOW);                  //set NSS low
+// #if defined ARDUINO || defined USE_ARDUPI  
+//   SPI.transfer(0x86);                       //address for write to REG_FRMSB
+//   SPI.transfer(freqregH);
+//   SPI.transfer(freqregM);
+//   SPI.transfer(freqregL);
+// #else
+// 	spibuf[0] = 0x86;
+// 	spibuf[1] = freqregH;
+// 	spibuf[2] = freqregM;
+// 	spibuf[3] = freqregL;		
 
-	wiringPiSPIDataRW(SPI_CHANNEL, spibuf, 4);
-#endif  
-  digitalWrite(_NSS, HIGH);                 //set NSS high
+// 	wiringPiSPIDataRW(SPI_CHANNEL, spibuf, 4);
+// #endif  
+//   digitalWrite(_NSS, HIGH);                 //set NSS high
 
-#ifdef USE_SPI_TRANSACTION
-  SPI.endTransaction();
-#endif
+// #ifdef USE_SPI_TRANSACTION
+//   SPI.endTransaction();
+// #endif
 
-  writeRegister(REG_PLLHOP, 0x2D);          //restore PLLHOP register value
-  setMode(MODE_STDBY_RC);                   //turns off carrier
-}
+//   writeRegister(REG_PLLHOP, 0x2D);          //restore PLLHOP register value
+//   setMode(MODE_STDBY_RC);                   //turns off carrier
+// }
 
 void SX127XLT::setupDirect(uint32_t frequency, int32_t offset)
 {
@@ -4836,129 +4836,129 @@ void SX127XLT::fskCarrierOn(int8_t txpower)
 }
 
 
-void SX127XLT::fskCarrierOff()
-{
-#ifdef SX127XDEBUG1
-  PRINT_CSTSTR("fskCarrierOff()");
-#endif
+// void SX127XLT::fskCarrierOff()
+// {
+// #ifdef SX127XDEBUG1
+//   PRINT_CSTSTR("fskCarrierOff()");
+// #endif
 
- setMode(MODE_STDBY_RC);                   //turns off carrier
-}
+//  setMode(MODE_STDBY_RC);                   //turns off carrier
+// }
 
 
-void SX127XLT::setRfFrequencyDirect(uint8_t high, uint8_t mid, uint8_t low)
-{   
+// void SX127XLT::setRfFrequencyDirect(uint8_t high, uint8_t mid, uint8_t low)
+// {   
   
-#ifdef SX127XDEBUG1
-  PRINT_CSTSTR("setRfFrequencyDirect()");
-#endif
+// #ifdef SX127XDEBUG1
+//   PRINT_CSTSTR("setRfFrequencyDirect()");
+// #endif
   
-#ifdef USE_SPI_TRANSACTION         //to use SPI_TRANSACTION enable define at beginning of CPP file 
-  SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
-#endif
+// #ifdef USE_SPI_TRANSACTION         //to use SPI_TRANSACTION enable define at beginning of CPP file 
+//   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
+// #endif
   
-  digitalWrite(_NSS, LOW);                  //set NSS low
-#if defined ARDUINO || defined USE_ARDUPI  
-  SPI.transfer(0x86);                       //address for write to REG_FRMSB
-  SPI.transfer(high);
-  SPI.transfer(mid);
-  SPI.transfer(low);
-#else
-	uint8_t spibuf[4];
-	spibuf[0] = 0x86;
-	spibuf[1] = high;
-	spibuf[2] = mid;
-	spibuf[3] = low;		
+//   digitalWrite(_NSS, LOW);                  //set NSS low
+// #if defined ARDUINO || defined USE_ARDUPI  
+//   SPI.transfer(0x86);                       //address for write to REG_FRMSB
+//   SPI.transfer(high);
+//   SPI.transfer(mid);
+//   SPI.transfer(low);
+// #else
+// 	uint8_t spibuf[4];
+// 	spibuf[0] = 0x86;
+// 	spibuf[1] = high;
+// 	spibuf[2] = mid;
+// 	spibuf[3] = low;		
 
-	wiringPiSPIDataRW(SPI_CHANNEL, spibuf, 4);
-#endif   
-  digitalWrite(_NSS, HIGH);                 //set NSS high
+// 	wiringPiSPIDataRW(SPI_CHANNEL, spibuf, 4);
+// #endif   
+//   digitalWrite(_NSS, HIGH);                 //set NSS high
   
-#ifdef USE_SPI_TRANSACTION
-  SPI.endTransaction();
-#endif
-}
+// #ifdef USE_SPI_TRANSACTION
+//   SPI.endTransaction();
+// #endif
+// }
 
-void SX127XLT::getRfFrequencyRegisters(uint8_t *buff)
-{
-  //returns the register values for the current set frequency
+// void SX127XLT::getRfFrequencyRegisters(uint8_t *buff)
+// {
+//   //returns the register values for the current set frequency
   
-#ifdef SX127XDEBUG1
-  PRINT_CSTSTR("getRfFrequencyRegisters()");
-#endif
+// #ifdef SX127XDEBUG1
+//   PRINT_CSTSTR("getRfFrequencyRegisters()");
+// #endif
 
   
-#ifdef USE_SPI_TRANSACTION         //to use SPI_TRANSACTION enable define at beginning of CPP file 
-  SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
-#endif
+// #ifdef USE_SPI_TRANSACTION         //to use SPI_TRANSACTION enable define at beginning of CPP file 
+//   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
+// #endif
   
-  digitalWrite(_NSS, LOW);                  //set NSS low
-#if defined ARDUINO || defined USE_ARDUPI  
-  SPI.transfer(REG_FRMSB & 0x7F);           //mask address for read
-  buff[0] = SPI.transfer(0);                //read the byte into buffer
-  buff[1] = SPI.transfer(0);                //read the byte into buffer
-  buff[2] = SPI.transfer(0);                //read the byte into buffer
-#else
-	uint8_t spibuf[4];
-	spibuf[0] = REG_FRMSB & 0x7F;
-	spibuf[1] = 0x00;
-	spibuf[2] = 0x00;
-	spibuf[3] = 0x00;		
+//   digitalWrite(_NSS, LOW);                  //set NSS low
+// #if defined ARDUINO || defined USE_ARDUPI  
+//   SPI.transfer(REG_FRMSB & 0x7F);           //mask address for read
+//   buff[0] = SPI.transfer(0);                //read the byte into buffer
+//   buff[1] = SPI.transfer(0);                //read the byte into buffer
+//   buff[2] = SPI.transfer(0);                //read the byte into buffer
+// #else
+// 	uint8_t spibuf[4];
+// 	spibuf[0] = REG_FRMSB & 0x7F;
+// 	spibuf[1] = 0x00;
+// 	spibuf[2] = 0x00;
+// 	spibuf[3] = 0x00;		
 
-	wiringPiSPIDataRW(SPI_CHANNEL, spibuf, 4);
+// 	wiringPiSPIDataRW(SPI_CHANNEL, spibuf, 4);
 	
-	buff[0] = spibuf[1];
-	buff[1] = spibuf[2];
-	buff[2] = spibuf[3];		
-#endif   
-  digitalWrite(_NSS, HIGH);                 //set NSS high
+// 	buff[0] = spibuf[1];
+// 	buff[1] = spibuf[2];
+// 	buff[2] = spibuf[3];		
+// #endif   
+//   digitalWrite(_NSS, HIGH);                 //set NSS high
   
-#ifdef USE_SPI_TRANSACTION
-  SPI.endTransaction();
-#endif
-}
+// #ifdef USE_SPI_TRANSACTION
+//   SPI.endTransaction();
+// #endif
+// }
 
-void SX127XLT::startFSKRTTY(uint32_t freqshift, uint8_t pips, uint16_t pipPeriodmS, uint16_t pipDelaymS, uint16_t leadinmS)
-{
+// void SX127XLT::startFSKRTTY(uint32_t freqshift, uint8_t pips, uint16_t pipPeriodmS, uint16_t pipDelaymS, uint16_t leadinmS)
+// {
   
-  #ifdef SX127XDEBUG1
-  PRINT_CSTSTR("startFSKRTTY()");
-  #endif
+//   #ifdef SX127XDEBUG1
+//   PRINT_CSTSTR("startFSKRTTY()");
+//   #endif
   
-  uint8_t freqShiftRegs[3];                        //to hold returned registers for shifted frequency 
-  uint32_t setCentreFrequency;                     //the configured centre frequency 
-  uint8_t index;
-  uint32_t endmS;
-  setCentreFrequency = savedFrequency;             //to avoid using the savedFrequency
+//   uint8_t freqShiftRegs[3];                        //to hold returned registers for shifted frequency 
+//   uint32_t setCentreFrequency;                     //the configured centre frequency 
+//   uint8_t index;
+//   uint32_t endmS;
+//   setCentreFrequency = savedFrequency;             //to avoid using the savedFrequency
     
-  writeRegister(REG_PLLHOP, 0xAD);                 //set fast hop mode, needed for fast changes of frequency
+//   writeRegister(REG_PLLHOP, 0xAD);                 //set fast hop mode, needed for fast changes of frequency
   
-  setRfFrequency((savedFrequency + freqshift), savedOffset);          //temporaily set the RF frequency
-  getRfFrequencyRegisters(freqShiftRegs);                             //fill first 3 bytes with current frequency registers
-  setRfFrequency(setCentreFrequency, savedOffset);                    //reset the base frequency registers
+//   setRfFrequency((savedFrequency + freqshift), savedOffset);          //temporaily set the RF frequency
+//   getRfFrequencyRegisters(freqShiftRegs);                             //fill first 3 bytes with current frequency registers
+//   setRfFrequency(setCentreFrequency, savedOffset);                    //reset the base frequency registers
    
-  _ShiftfreqregH = freqShiftRegs[0];
-  _ShiftfreqregM = freqShiftRegs[1];
-  _ShiftfreqregL = freqShiftRegs[2];
+//   _ShiftfreqregH = freqShiftRegs[0];
+//   _ShiftfreqregM = freqShiftRegs[1];
+//   _ShiftfreqregL = freqShiftRegs[2];
   
-  writeRegister(REG_PLLHOP, 0xAD);          //set fast hop mode, needed for fast changes of frequency
-  setTxParams(10, RADIO_RAMP_DEFAULT);
+//   writeRegister(REG_PLLHOP, 0xAD);          //set fast hop mode, needed for fast changes of frequency
+//   setTxParams(10, RADIO_RAMP_DEFAULT);
   
-  for (index = 1; index <= pips; index++)
-  {
-  setRfFrequencyDirect(_ShiftfreqregH, _ShiftfreqregM, _ShiftfreqregL); //set carrier frequency
-  setTXDirect();                                                           //turn on carrier 
-  delay(pipPeriodmS);
-  setMode(MODE_STDBY_RC);                                                  //turns off carrier
-  delay(pipDelaymS);
-  }
+//   for (index = 1; index <= pips; index++)
+//   {
+//   setRfFrequencyDirect(_ShiftfreqregH, _ShiftfreqregM, _ShiftfreqregL); //set carrier frequency
+//   setTXDirect();                                                           //turn on carrier 
+//   delay(pipPeriodmS);
+//   setMode(MODE_STDBY_RC);                                                  //turns off carrier
+//   delay(pipDelaymS);
+//   }
   
-  setRfFrequencyDirect(_ShiftfreqregH, _ShiftfreqregM, _ShiftfreqregL); //set carrier frequency 
-  endmS = millis() + leadinmS; 
-  setTXDirect();                                                           //turn on carrier 
-  while (millis() < endmS);                                                //leave leadin on
+//   setRfFrequencyDirect(_ShiftfreqregH, _ShiftfreqregM, _ShiftfreqregL); //set carrier frequency 
+//   endmS = millis() + leadinmS; 
+//   setTXDirect();                                                           //turn on carrier 
+//   while (millis() < endmS);                                                //leave leadin on
 
-}
+// }
 
 void SX127XLT::transmitFSKRTTY(uint8_t chartosend, uint8_t databits, uint8_t stopbits, uint8_t parity, uint16_t baudPerioduS, int8_t pin)
 {
