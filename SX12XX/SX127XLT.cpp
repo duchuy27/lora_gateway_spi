@@ -2207,7 +2207,8 @@ uint8_t SX127XLT::receive(uint8_t *rxbuffer, uint8_t size, uint32_t rxtimeout, u
   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
 #endif
 
-  digitalWrite(_NSS, LOW);                    //start the burst read
+  //digitalWrite(_NSS, LOW);                    //start the burst read
+  *((uint32_t *)temp + 1) = 0;
 
 #if defined ARDUINO || defined USE_ARDUPI  
   SPI.transfer(REG_FIFO);
@@ -2222,7 +2223,8 @@ uint8_t SX127XLT::receive(uint8_t *rxbuffer, uint8_t size, uint32_t rxtimeout, u
 #endif    
     rxbuffer[index] = regdata;
   }
-  digitalWrite(_NSS, HIGH);
+  //digitalWrite(_NSS, HIGH);
+  *((uint32_t *)temp + 1) = 1;
 
 #ifdef USE_SPI_TRANSACTION
   SPI.endTransaction();
@@ -2361,7 +2363,7 @@ uint8_t SX127XLT::receiveAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t rxt
   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
 #endif
 
-  digitalWrite(_NSS, LOW);                    //start the burst read
+  *((uint32_t *)temp + 1) = 0;                    //start the burst read
 
   /**************************************************************************
 	Added by C. Pham - Oct. 2020
@@ -2423,7 +2425,7 @@ uint8_t SX127XLT::receiveAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t rxt
 #endif
     rxbuffer[index] = regdata;
   }
-  digitalWrite(_NSS, HIGH);
+  *((uint32_t *)temp + 1) = 1;
 
 #ifdef USE_SPI_TRANSACTION
   SPI.endTransaction();
@@ -2511,7 +2513,7 @@ uint8_t SX127XLT::readPacket(uint8_t *rxbuffer, uint8_t size)
   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
 #endif
 
-  digitalWrite(_NSS, LOW);                    //start the burst read
+  *((uint32_t *)temp + 1) = 0;                    //start the burst read
 
 #if defined ARDUINO || defined USE_ARDUPI  
   SPI.transfer(REG_FIFO);
@@ -2526,7 +2528,7 @@ uint8_t SX127XLT::readPacket(uint8_t *rxbuffer, uint8_t size)
 #endif
     rxbuffer[index] = regdata;   
   }
-  digitalWrite(_NSS, HIGH);
+  *((uint32_t *)temp + 1) = 1;
 
 #ifdef USE_SPI_TRANSACTION
   SPI.endTransaction();
@@ -2635,7 +2637,7 @@ uint8_t SX127XLT::transmit(uint8_t *txbuffer, uint8_t size, uint32_t txtimeout, 
   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
 #endif
 
-  digitalWrite(_NSS, LOW);
+  *((uint32_t *)temp + 1) = 0;
   
 #if defined ARDUINO || defined USE_ARDUPI  
   SPI.transfer(WREG_FIFO);
@@ -2650,7 +2652,7 @@ uint8_t SX127XLT::transmit(uint8_t *txbuffer, uint8_t size, uint32_t txtimeout, 
 		writeRegister(WREG_FIFO, bufferdata);
 #endif    
   }
-  digitalWrite(_NSS, HIGH);
+  *((uint32_t *)temp + 1) = 1;
 
 #ifdef USE_SPI_TRANSACTION
   SPI.endTransaction();
@@ -2753,7 +2755,7 @@ uint8_t SX127XLT::transmitAddressed(uint8_t *txbuffer, uint8_t size, char txpack
   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
 #endif
 
-  digitalWrite(_NSS, LOW);
+  *((uint32_t *)temp + 1) = 0;
 
   /**************************************************************************
 	Added by C. Pham - Oct. 2020
@@ -2798,7 +2800,7 @@ uint8_t SX127XLT::transmitAddressed(uint8_t *txbuffer, uint8_t size, char txpack
     writeRegister(WREG_FIFO, bufferdata);
 #endif    
   }
-  digitalWrite(_NSS, HIGH);
+  *((uint32_t *)temp + 1) = 1;
 
 #ifdef USE_SPI_TRANSACTION
   SPI.endTransaction();
