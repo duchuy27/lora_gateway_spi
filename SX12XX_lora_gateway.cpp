@@ -470,7 +470,7 @@ void loop(void)
 			if (errors>10) {
 				errors=0;
 				PRINTLN_CSTSTR("^$Resetting radio module, too many errors");
-				LT.resetDevice();
+				//LT.resetDevice();
 				loraConfig();
 				// to start over
 				status_counter=0;
@@ -950,7 +950,7 @@ void loop(void)
 	{	
 		PRINTLN_CSTSTR("^$****Periodic reset");
 		RXpacketCountReset=RXpacketCount;
-		LT.resetDevice();
+		//LT.resetDevice();
 		loraConfig();	
 	}	
 #endif	

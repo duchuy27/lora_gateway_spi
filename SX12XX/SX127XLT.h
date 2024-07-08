@@ -33,7 +33,7 @@ class SX127XLT
     void wake();
     void calibrateImage(uint8_t null);
     uint16_t CRCCCITT(uint8_t *buffer, uint8_t size, uint16_t startvalue);
-    uint16_t CRCCCITTSX(uint8_t startadd, uint8_t endadd, uint16_t startvalue);
+    // uint16_t CRCCCITTSX(uint8_t startadd, uint8_t endadd, uint16_t startvalue);
 
     void setDevice(uint8_t type);
     void printDevice();
@@ -114,7 +114,7 @@ class SX127XLT
     uint8_t receive(uint8_t *rxbuffer, uint8_t size, uint32_t rxtimeout, uint8_t wait);
     uint8_t receiveAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t rxtimeout, uint8_t wait);
     uint8_t readPacket(uint8_t *rxbuffer, uint8_t size);                    //needed for when receive used with NO_WAIT
-    uint8_t readPacketAddressed(uint8_t *rxbuffer, uint8_t size);           //needed for when receive used with NO_WAIT
+    // uint8_t readPacketAddressed(uint8_t *rxbuffer, uint8_t size);           //needed for when receive used with NO_WAIT
 
     uint8_t transmit(uint8_t *txbuffer, uint8_t size, uint32_t txtimeout, int8_t txPower, uint8_t wait);
     uint8_t transmitAddressed(uint8_t *txbuffer, uint8_t size, char txpackettype, char txdestination, char txsource, uint32_t txtimeout, int8_t txpower, uint8_t wait);
@@ -153,22 +153,22 @@ class SX127XLT
     void endFSKRTTY();
     void doAFC();
     int32_t getOffset();
-    uint32_t transmitReliable(uint8_t *txbuffer, uint8_t size, char txpackettype, char txdestination, char txsource, uint32_t txtimeout, int8_t txpower, uint8_t wait );
+    // uint32_t transmitReliable(uint8_t *txbuffer, uint8_t size, char txpackettype, char txdestination, char txsource, uint32_t txtimeout, int8_t txpower, uint8_t wait );
     uint16_t addCRC(uint8_t data, uint16_t libraryCRC);
-    uint32_t receiveReliable(uint8_t *rxbuffer, uint8_t size, char packettype, char destination, char source, uint32_t rxtimeout, uint8_t wait );
+    // uint32_t receiveReliable(uint8_t *rxbuffer, uint8_t size, char packettype, char destination, char source, uint32_t rxtimeout, uint8_t wait );
     //uint32_t receiveFT(uint8_t *rxbuffer, uint8_t size, char packettype, char destination, char source, uint32_t rxtimeout, uint8_t wait );
 
     uint32_t returnBandwidth();
     int8_t doCAD(uint8_t counter);
     uint16_t getToA(uint8_t pl);
     void CarrierSense(uint8_t cs=1, bool extendedIFS=false, bool onlyOnce=false);
-    uint16_t CollisionAvoidance(uint8_t pl, uint8_t ca=1);
+    // uint16_t CollisionAvoidance(uint8_t pl, uint8_t ca=1);
     void CarrierSense1(uint8_t cad_number, bool extendedIFS=false, bool onlyOnce=false);
     void CarrierSense2(uint8_t cad_number, bool extendedIFS=false);
     void CarrierSense3(uint8_t cad_number);
     uint8_t transmitRTSAddressed(uint8_t pl);
-    uint16_t CollisionAvoidance0(uint8_t pl, uint8_t cad_number);
-    uint8_t receiveRTSAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t rxtimeout, uint8_t wait);    
+    // uint16_t CollisionAvoidance0(uint8_t pl, uint8_t cad_number);
+    // uint8_t receiveRTSAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t rxtimeout, uint8_t wait);    
     uint8_t invertIQ(bool invert);
     void setTXSeqNo(uint8_t seqno);
     uint8_t readTXSeqNo();
@@ -186,21 +186,21 @@ class SX127XLT
     //*******************************************************************************
 
     uint8_t receiveSXBuffer(uint8_t startaddr, uint32_t rxtimeout, uint8_t wait);
-    uint8_t transmitSXBuffer(uint8_t startaddr, uint8_t length, uint32_t txtimeout, int8_t txpower, uint8_t wait);
+    // uint8_t transmitSXBuffer(uint8_t startaddr, uint8_t length, uint32_t txtimeout, int8_t txpower, uint8_t wait);
 
-    void printSXBufferHEX(uint8_t start, uint8_t end);
-    void printSXBufferASCII(uint8_t start, uint8_t end);
-    void fillSXBuffer(uint8_t startaddress, uint8_t size, uint8_t character);
-    uint8_t getByteSXBuffer(uint8_t addr);
-    void writeByteSXBuffer(uint8_t addr, uint8_t regdata);
+    // void printSXBufferHEX(uint8_t start, uint8_t end);
+    // void printSXBufferASCII(uint8_t start, uint8_t end);
+    // void fillSXBuffer(uint8_t startaddress, uint8_t size, uint8_t character);
+    // uint8_t getByteSXBuffer(uint8_t addr);
+    // void writeByteSXBuffer(uint8_t addr, uint8_t regdata);
 
-    void startWriteSXBuffer(uint8_t ptr);
-    uint8_t endWriteSXBuffer();
-    void startReadSXBuffer(uint8_t ptr);
-    uint8_t endReadSXBuffer();
+    // void startWriteSXBuffer(uint8_t ptr);
+    // uint8_t endWriteSXBuffer();
+    // void startReadSXBuffer(uint8_t ptr);
+    // uint8_t endReadSXBuffer();
 
-    void writeUint8(uint8_t x);
-    uint8_t readUint8();
+    // void writeUint8(uint8_t x);
+    // uint8_t readUint8();
  
     uint8_t readBytes(uint8_t *rxbuffer,   uint8_t size);
 

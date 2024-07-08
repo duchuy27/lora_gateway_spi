@@ -349,38 +349,38 @@ uint16_t SX127XLT::CRCCCITT(uint8_t *buffer, uint8_t size, uint16_t startvalue)
   return libraryCRC;
 }
 
-uint16_t SX127XLT::CRCCCITTSX(uint8_t startadd, uint8_t endadd, uint16_t startvalue)
-{
-  //genrates a CRC of an area of the internal SX buffer
+// uint16_t SX127XLT::CRCCCITTSX(uint8_t startadd, uint8_t endadd, uint16_t startvalue)
+// {
+//   //genrates a CRC of an area of the internal SX buffer
 
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("CRCCCITTSX()");
-#endif
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("CRCCCITTSX()");
+// #endif
 
 
-  uint16_t index, libraryCRC;
-  uint8_t j;
+//   uint16_t index, libraryCRC;
+//   uint8_t j;
 
-  libraryCRC = startvalue;                                  //start value for CRC16
+//   libraryCRC = startvalue;                                  //start value for CRC16
 
-  startReadSXBuffer(startadd);                       //begin the buffer read
+//   startReadSXBuffer(startadd);                       //begin the buffer read
 
-  for (index = startadd; index <= endadd; index++)
-  {
-    libraryCRC ^= (((uint16_t) readUint8() ) << 8);
-    for (j = 0; j < 8; j++)
-    {
-      if (libraryCRC & 0x8000)
-        libraryCRC = (libraryCRC << 1) ^ 0x1021;
-      else
-        libraryCRC <<= 1;
-    }
-  }
+//   for (index = startadd; index <= endadd; index++)
+//   {
+//     libraryCRC ^= (((uint16_t) readUint8() ) << 8);
+//     for (j = 0; j < 8; j++)
+//     {
+//       if (libraryCRC & 0x8000)
+//         libraryCRC = (libraryCRC << 1) ^ 0x1021;
+//       else
+//         libraryCRC <<= 1;
+//     }
+//   }
 
-  endReadSXBuffer();                                 //end the buffer read
+//   endReadSXBuffer();                                 //end the buffer read
 
-  return libraryCRC;
-}
+//   return libraryCRC;
+// }
 
 
 void SX127XLT::setDevice(uint8_t type)
@@ -441,14 +441,6 @@ void SX127XLT::printDevice()
 // }
 
 //############################################
-
-void digitalWrite(string name, bool value){
-  if(name == "_NSS"){
-    if(value)
-      *((uint32_t *)temp + 1) = 1;
-    else *((uint32_t *)temp + 1) = 0;
-  } else if(name == )
-}
 uint8_t SX127XL::spi_read(uint32_t data){
   int t = 0;
 
@@ -499,35 +491,14 @@ void SX127XLT::writeRegister(uint8_t address, uint8_t value)
   PRINTLN_CSTSTR("writeRegister()");
 #endif
 
-#if defined ARDUINO || defined USE_ARDUPI
-
-#ifdef USE_SPI_TRANSACTION                  //to use SPI_TRANSACTION enable define at beginning of CPP file 
-  SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
-#endif
-
-  digitalWrite(_NSS, LOW);                  //set NSS low
-  SPI.transfer(address | 0x80);             //mask address for write
-  SPI.transfer(value);                      //write the byte
-  digitalWrite(_NSS, HIGH);                 //set NSS high
-
-#ifdef USE_SPI_TRANSACTION
-  SPI.endTransaction();
-#endif
-
-#else
   uint8_t spibuf[2];
   spibuf[0] = address | 0x80;
   spibuf[1] = value;
-
-  // digitalWrite(_NSS, LOW);         //set NSS low
-  // wiringPiSPIDataRW(SPI_CHANNEL, spibuf, 2);
-  // digitalWrite(_NSS, HIGH);        //set NSS high
 
   uint32_t data;
   data = spibuf[0] | (spibuf[1] << 8);
   spi_write(data);
 
-#endif
 
 #ifdef SX127XDEBUG2
   PRINT_CSTSTR("Write register ");
@@ -542,51 +513,13 @@ void SX127XLT::writeRegister(uint8_t address, uint8_t value)
 
 uint8_t SX127XLT::readRegister(uint8_t address)
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("readRegister()");
-#endif
-
-  uint8_t regdata;
-
-#if defined ARDUINO || defined USE_ARDUPI
-
-#ifdef USE_SPI_TRANSACTION         //to use SPI_TRANSACTION enable define at beginning of CPP file 
-  SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
-#endif
-
-  digitalWrite(_NSS, LOW);         //set NSS low
-  SPI.transfer(address & 0x7F);    //mask address for read
-  regdata = SPI.transfer(0);       //read the byte
-  digitalWrite(_NSS, HIGH);        //set NSS high
-
-#ifdef USE_SPI_TRANSACTION
-  SPI.endTransaction();
-#endif
-
-#else
 	uint8_t spibuf[2];
 	spibuf[0] = address & 0x7F;
 	spibuf[1] = 0x00;
 
-  // digitalWrite(_NSS, LOW);         //set NSS low
-	// wiringPiSPIDataRW(SPI_CHANNEL, spibuf, 2);   
-  // digitalWrite(_NSS, HIGH);        //set NSS high
-  // regdata=spibuf[1];  
-
   uint32_t data;
   data = spibuf[0] | (spibuf[1] << 8);
   regdata = spi_read(data);
-
-#endif
-
-#ifdef SX127XDEBUG2
-  PRINT_CSTSTR("Read register ");
-  printHEXByte0x(address);
-  PRINT_CSTSTR(" ");
-  printHEXByte0x(regdata);
-  PRINTLN;
-  FLUSHOUTPUT;
-#endif
 
   return regdata;
 }
@@ -2550,188 +2483,6 @@ uint8_t SX127XLT::receiveAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t rxt
 }
 
 
-/**************************************************************************
-Added by C. Pham - Dec. 2020
-**************************************************************************/
-
-uint8_t SX127XLT::receiveRTSAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t rxtimeout, uint8_t wait)
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("receiveRTSAddressed()");
-#endif
-
-  uint16_t index;
-  uint32_t endtimeoutmS;
-  uint8_t regdata;
-  bool validHeader=false;
-
-  setMode(MODE_STDBY_RC);
-  regdata = readRegister(REG_FIFORXBASEADDR);                                //retrieve the RXbase address pointer
-  writeRegister(REG_FIFOADDRPTR, regdata);                                   //and save in FIFO access ptr
-
-  setDioIrqParams(IRQ_RADIO_ALL, (IRQ_RX_DONE + IRQ_HEADER_VALID), 0, 0);   //set for IRQ on RX done
-  setRx(0);                                                                 //no actual RX timeout in this function
-  
-  if (!wait)
-  {
-    return 0;                                                              //not wait requested so no packet length to pass
-  }
-  
-  if (rxtimeout == 0)
-  {
-#ifdef USE_POLLING
-    index = readRegister(REG_IRQFLAGS);
-
-    //poll the irq register for ValidHeader, bit 4
-    while ((bitRead(index, 4) == 0))
-      {
-        index = readRegister(REG_IRQFLAGS);
-        // adding this small delay decreases the CPU load of the lora_gateway process to 4~5% instead of nearly 100%
-        // suggested by rertini (https://github.com/CongducPham/LowCostLoRaGw/issues/211)
-        // tests have shown no significant side effects
-        delay(1);        
-      }    
-
-		validHeader=true;
-		
-    //_RXTimestamp start when a valid header has been received
-    _RXTimestamp=millis();
-#ifdef SX127XDEBUG1	
-  	PRINTLN_CSTSTR("Valid header detected"); 		
-#endif
-        
-    //poll the irq register for RXDone, bit 6
-    while ((bitRead(index, 6) == 0))
-      {
-        index = readRegister(REG_IRQFLAGS);
-      }
-#endif    
-  }
-  else
-  {
-    endtimeoutmS = (millis() + rxtimeout);
-#ifdef USE_POLLING
-
-#ifdef SX127XDEBUG1
-  	PRINTLN_CSTSTR("RXDone using polling");
-#endif 
-    index = readRegister(REG_IRQFLAGS);
-		
-    //poll the irq register for ValidHeader, bit 4
-    while ((bitRead(index, 4) == 0) && (millis() < endtimeoutmS))
-      {
-        index = readRegister(REG_IRQFLAGS);
-        delay(1);        
-      }    
-
-		if (bitRead(index, 4)!=0) {
-		
-			validHeader=true;
-			
-    	//_RXTimestamp start when a valid header has been received
-    	_RXTimestamp=millis();		
-#ifdef SX127XDEBUG1	
-  		PRINTLN_CSTSTR("Valid header detected"); 		
-#endif
-
-			//update endtimeoutmS to try to get the RXDone in a short time interval
-			endtimeoutmS = (_RXTimestamp + 250);
-    }
-              
-    //poll the irq register for RXDone, bit 6
-    while ((bitRead(index, 6) == 0) && (millis() < endtimeoutmS))
-      {
-        index = readRegister(REG_IRQFLAGS);
-      }
-#endif    
-  }
-
-  //_RXDoneTimestamp start when the packet been fully received  
-  _RXDoneTimestamp=millis();
-
-#ifdef SX127XDEBUG1
-  PRINTLN_VALUE("%ld", _RXTimestamp);
-	PRINTLN_VALUE("%ld", _RXDoneTimestamp);  		
-#endif
-  
-  setMode(MODE_STDBY_RC);                                            //ensure to stop further packet reception
-
-#ifdef USE_POLLING
-  if (bitRead(index, 6) == 0)                                           //check if DIO still low, is so must be RX timeout
-#endif  
-  {
-    _IRQmsb = IRQ_RX_TIMEOUT;
-#ifdef SX127XDEBUG1    
-    PRINTLN_CSTSTR("RX timeout");
-#endif
-		
-		// if we got a valid header but no RXDone, it is maybe a long data packet
-		// so we return a value greater than 1
-		if (validHeader)
-			return(2);
-		else	    
-    	return 0;
-  }
-
-  _RXPacketL = readRegister(REG_RXNBBYTES);
-
-#ifdef USE_SPI_TRANSACTION   //to use SPI_TRANSACTION enable define at beginning of CPP file 
-  SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
-#endif
-
-  digitalWrite(_NSS, LOW);                    //start the burst read
-  
-#if defined ARDUINO || defined USE_ARDUPI
-  SPI.transfer(REG_FIFO);
-  // we read our header
-  _RXDestination = SPI.transfer(0);
-  _RXPacketType = SPI.transfer(0);
-  _RXSource = SPI.transfer(0);
-  _RXSeqNo = SPI.transfer(0);  
-#else  
-  // we read our header
-  _RXDestination = readRegister(REG_FIFO);
-  _RXPacketType = readRegister(REG_FIFO);
-  _RXSource = readRegister(REG_FIFO);
-  _RXSeqNo = readRegister(REG_FIFO);
-#endif  
-  
-  //the header is not passed to the user
-  _RXPacketL=_RXPacketL-HEADER_SIZE;
-  
-  if (_RXPacketL > size)                      //check passed buffer is big enough for packet
-  {
-  	// if _RXPacketL!=1 it is a very short data packet because we have RXDone
-  	// so we ignore it
-    return(0);
-  }  
-
-  for (index = 0; index < _RXPacketL; index++)
-  {
-#if defined ARDUINO || defined USE_ARDUPI  
-    regdata = SPI.transfer(0);
-#else
-    regdata = readRegister(REG_FIFO);
-#endif    
-    rxbuffer[index] = regdata;
-  }
-  digitalWrite(_NSS, HIGH);
-
-#ifdef USE_SPI_TRANSACTION
-  SPI.endTransaction();
-#endif
-
-	// check if it is really an RTS packet
-	if (_RXPacketType!=PKT_TYPE_RTS)
-		return(0);
-
-  return _RXPacketL;                           //so we can check for packet having enough buffer space
-}
-
-/**************************************************************************
-End by C. Pham - Dec. 2020
-**************************************************************************/ 
-
 uint8_t SX127XLT::readPacket(uint8_t *rxbuffer, uint8_t size)
 {
 #ifdef SX127XDEBUG1
@@ -2785,80 +2536,80 @@ uint8_t SX127XLT::readPacket(uint8_t *rxbuffer, uint8_t size)
 }
 
 
-uint8_t SX127XLT::readPacketAddressed(uint8_t *rxbuffer, uint8_t size)
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("readPacketAddressed()");
-#endif
+// uint8_t SX127XLT::readPacketAddressed(uint8_t *rxbuffer, uint8_t size)
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("readPacketAddressed()");
+// #endif
 
-  uint8_t index, regdata;
+//   uint8_t index, regdata;
 
-  setMode(MODE_STDBY_RC);
-  regdata = readRegister(REG_FIFORXBASEADDR);  //retrieve the RXbase address pointer
-  writeRegister(REG_FIFOADDRPTR, regdata);     //and save in FIFO access ptr
+//   setMode(MODE_STDBY_RC);
+//   regdata = readRegister(REG_FIFORXBASEADDR);  //retrieve the RXbase address pointer
+//   writeRegister(REG_FIFOADDRPTR, regdata);     //and save in FIFO access ptr
 
-  _RXPacketL = readRegister(REG_RXNBBYTES);
+//   _RXPacketL = readRegister(REG_RXNBBYTES);
 
-  if (_RXPacketL > size)                      //check passed buffer is big enough for packet
-  {
-    _RXPacketL = size;                          //truncate packet if not enough space
-  }
+//   if (_RXPacketL > size)                      //check passed buffer is big enough for packet
+//   {
+//     _RXPacketL = size;                          //truncate packet if not enough space
+//   }
 
-#ifdef USE_SPI_TRANSACTION   //to use SPI_TRANSACTION enable define at beginning of CPP file 
-  SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
-#endif
+// #ifdef USE_SPI_TRANSACTION   //to use SPI_TRANSACTION enable define at beginning of CPP file 
+//   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
+// #endif
 
-  digitalWrite(_NSS, LOW);                    //start the burst read
+//   digitalWrite(_NSS, LOW);                    //start the burst read
   
-  /**************************************************************************
-	Added by C. Pham - Oct. 2020
-  **************************************************************************/  
+//   /**************************************************************************
+// 	Added by C. Pham - Oct. 2020
+//   **************************************************************************/  
 
-#if defined ARDUINO || defined USE_ARDUPI  
-  SPI.transfer(REG_FIFO);
-  // we read our header
-  _RXDestination = SPI.transfer(0);
-  _RXPacketType = SPI.transfer(0);
-  _RXSource = SPI.transfer(0);
-  _RXSeqNo = SPI.transfer(0);
-#else
-  // we read our header
-  _RXDestination = readRegister(REG_FIFO);
-  _RXPacketType = readRegister(REG_FIFO);
-  _RXSource = readRegister(REG_FIFO);
-  _RXSeqNo = readRegister(REG_FIFO);
-#endif
+// #if defined ARDUINO || defined USE_ARDUPI  
+//   SPI.transfer(REG_FIFO);
+//   // we read our header
+//   _RXDestination = SPI.transfer(0);
+//   _RXPacketType = SPI.transfer(0);
+//   _RXSource = SPI.transfer(0);
+//   _RXSeqNo = SPI.transfer(0);
+// #else
+//   // we read our header
+//   _RXDestination = readRegister(REG_FIFO);
+//   _RXPacketType = readRegister(REG_FIFO);
+//   _RXSource = readRegister(REG_FIFO);
+//   _RXSeqNo = readRegister(REG_FIFO);
+// #endif
 
-  /**************************************************************************
-	End by C. Pham - Oct. 2020
-  **************************************************************************/  
+//   /**************************************************************************
+// 	End by C. Pham - Oct. 2020
+//   **************************************************************************/  
   
-  /* original code
-   ***************
+//   /* original code
+//    ***************
     
-  _RXPacketType = SPI.transfer(0);
-  _RXDestination = SPI.transfer(0);
-  _RXSource = SPI.transfer(0);
+//   _RXPacketType = SPI.transfer(0);
+//   _RXDestination = SPI.transfer(0);
+//   _RXSource = SPI.transfer(0);
   
-  */
+//   */
 
-  for (index = 0; index < _RXPacketL; index++)
-  {
-#if defined ARDUINO || defined USE_ARDUPI  
-    regdata = SPI.transfer(0);
-#else
-    regdata = readRegister(REG_FIFO);
-#endif    
-    rxbuffer[index] = regdata;
-  }
-  digitalWrite(_NSS, HIGH);
+//   for (index = 0; index < _RXPacketL; index++)
+//   {
+// #if defined ARDUINO || defined USE_ARDUPI  
+//     regdata = SPI.transfer(0);
+// #else
+//     regdata = readRegister(REG_FIFO);
+// #endif    
+//     rxbuffer[index] = regdata;
+//   }
+//   digitalWrite(_NSS, HIGH);
 
-#ifdef USE_SPI_TRANSACTION
-  SPI.endTransaction();
-#endif
+// #ifdef USE_SPI_TRANSACTION
+//   SPI.endTransaction();
+// #endif
 
-  return _RXPacketL;                           //so we can check for packet having enough buffer space
-}
+//   return _RXPacketL;                           //so we can check for packet having enough buffer space
+// }
 
 
 uint8_t SX127XLT::transmit(uint8_t *txbuffer, uint8_t size, uint32_t txtimeout, int8_t txpower, uint8_t wait)
@@ -3680,371 +3431,371 @@ uint8_t SX127XLT::receiveSXBuffer(uint8_t startaddr, uint32_t rxtimeout, uint8_t
 
 
 
-uint8_t SX127XLT::transmitSXBuffer(uint8_t startaddr, uint8_t length, uint32_t txtimeout, int8_t txpower, uint8_t wait)
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("transmitSXBuffer()");
-#endif
+// uint8_t SX127XLT::transmitSXBuffer(uint8_t startaddr, uint8_t length, uint32_t txtimeout, int8_t txpower, uint8_t wait)
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("transmitSXBuffer()");
+// #endif
 	
-	uint16_t index;
-  uint32_t endtimeoutmS = 0;
+// 	uint16_t index;
+//   uint32_t endtimeoutmS = 0;
 
-  setMode(MODE_STDBY_RC);
+//   setMode(MODE_STDBY_RC);
 
-  writeRegister(REG_FIFOTXBASEADDR, startaddr);         //set start address of packet in buffer
-  writeRegister(REG_PAYLOADLENGTH, length);
+//   writeRegister(REG_FIFOTXBASEADDR, startaddr);         //set start address of packet in buffer
+//   writeRegister(REG_PAYLOADLENGTH, length);
 
-  setTxParams(txpower, RADIO_RAMP_DEFAULT);             //TX power and ramp time
+//   setTxParams(txpower, RADIO_RAMP_DEFAULT);             //TX power and ramp time
 
-  setDioIrqParams(IRQ_RADIO_ALL, IRQ_TX_DONE, 0, 0);    //set for IRQ on TX done
-  setTx(0);                                             //TX timeout is not handled in setTX()
+//   setDioIrqParams(IRQ_RADIO_ALL, IRQ_TX_DONE, 0, 0);    //set for IRQ on TX done
+//   setTx(0);                                             //TX timeout is not handled in setTX()
 
-  /**************************************************************************
-	Added by C. Pham - Oct. 2020
-  **************************************************************************/  
+//   /**************************************************************************
+// 	Added by C. Pham - Oct. 2020
+//   **************************************************************************/  
   
-  // increment packet sequence number
-  _TXSeqNo++;
+//   // increment packet sequence number
+//   _TXSeqNo++;
 
-  /**************************************************************************
-	End by C. Pham - Oct. 2020
-  **************************************************************************/
+//   /**************************************************************************
+// 	End by C. Pham - Oct. 2020
+//   **************************************************************************/
   
-  if (!wait)
-  {
-    return length;
-  }
+//   if (!wait)
+//   {
+//     return length;
+//   }
 
-  /**************************************************************************
-	Modified by C. Pham - Oct. 2020
-  **************************************************************************/
+//   /**************************************************************************
+// 	Modified by C. Pham - Oct. 2020
+//   **************************************************************************/
   
-  if (txtimeout == 0)
-  {
-#ifdef USE_POLLING
-    index = readRegister(REG_IRQFLAGS);
-    //poll the irq register for TXDone, bit 3
-    while ((bitRead(index, 3) == 0))
-      {
-        index = readRegister(REG_IRQFLAGS);
-      }              //Wait for pin to go high, TX finished
-#endif    
-  }
-  else
-  {
-    endtimeoutmS = (millis() + txtimeout);
-#ifdef USE_POLLING
+//   if (txtimeout == 0)
+//   {
+// #ifdef USE_POLLING
+//     index = readRegister(REG_IRQFLAGS);
+//     //poll the irq register for TXDone, bit 3
+//     while ((bitRead(index, 3) == 0))
+//       {
+//         index = readRegister(REG_IRQFLAGS);
+//       }              //Wait for pin to go high, TX finished
+// #endif    
+//   }
+//   else
+//   {
+//     endtimeoutmS = (millis() + txtimeout);
+// #ifdef USE_POLLING
 
-#ifdef SX127XDEBUG1
-  	PRINTLN_CSTSTR("TXDone using polling");
-#endif  
-    index = readRegister(REG_IRQFLAGS);
-    //poll the irq register for TXDone, bit 3
-    while ((bitRead(index, 3) == 0) && (millis() < endtimeoutmS))
-      {
-        index = readRegister(REG_IRQFLAGS);
-      }
-#endif    
-  }
+// #ifdef SX127XDEBUG1
+//   	PRINTLN_CSTSTR("TXDone using polling");
+// #endif  
+//     index = readRegister(REG_IRQFLAGS);
+//     //poll the irq register for TXDone, bit 3
+//     while ((bitRead(index, 3) == 0) && (millis() < endtimeoutmS))
+//       {
+//         index = readRegister(REG_IRQFLAGS);
+//       }
+// #endif    
+//   }
 
-  /**************************************************************************
-	End by C. Pham - Oct. 2020
-  **************************************************************************/
+//   /**************************************************************************
+// 	End by C. Pham - Oct. 2020
+//   **************************************************************************/
 
-  setMode(MODE_STDBY_RC);                               //ensure we leave function with TX off
+//   setMode(MODE_STDBY_RC);                               //ensure we leave function with TX off
 
-  if (millis() >= endtimeoutmS)                         //flag if TX timeout
-  {
-    _IRQmsb = IRQ_TX_TIMEOUT;
+//   if (millis() >= endtimeoutmS)                         //flag if TX timeout
+//   {
+//     _IRQmsb = IRQ_TX_TIMEOUT;
 
-    return 0;
-  }
+//     return 0;
+//   }
 
-  return length;                                         //no timeout, so TXdone must have been set
-}
+//   return length;                                         //no timeout, so TXdone must have been set
+// }
 
-void SX127XLT::printSXBufferHEX(uint8_t start, uint8_t end)
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("printSXBufferHEX()");
-#endif
+// void SX127XLT::printSXBufferHEX(uint8_t start, uint8_t end)
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("printSXBufferHEX()");
+// #endif
 
-  uint8_t index, regdata;
+//   uint8_t index, regdata;
 
-  setMode(MODE_STDBY_RC);
-  writeRegister(REG_FIFOADDRPTR, start);         //set FIFO access ptr to start
+//   setMode(MODE_STDBY_RC);
+//   writeRegister(REG_FIFOADDRPTR, start);         //set FIFO access ptr to start
 
-#ifdef USE_SPI_TRANSACTION     //to use SPI_TRANSACTION enable define at beginning of CPP file 
-  SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
-#endif
+// #ifdef USE_SPI_TRANSACTION     //to use SPI_TRANSACTION enable define at beginning of CPP file 
+//   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
+// #endif
 
-  digitalWrite(_NSS, LOW);                       //start the burst read
+//   digitalWrite(_NSS, LOW);                       //start the burst read
   
-#if defined ARDUINO || defined USE_ARDUPI  
-  SPI.transfer(REG_FIFO);
-#endif
+// #if defined ARDUINO || defined USE_ARDUPI  
+//   SPI.transfer(REG_FIFO);
+// #endif
 
-  for (index = start; index <= end; index++)
-  {
-#if defined ARDUINO || defined USE_ARDUPI   
-    regdata = SPI.transfer(0);
-#else
-    regdata = readRegister(REG_FIFO);
-#endif    
-    printHEXByte(regdata);
-    PRINT_CSTSTR(" ");
+//   for (index = start; index <= end; index++)
+//   {
+// #if defined ARDUINO || defined USE_ARDUPI   
+//     regdata = SPI.transfer(0);
+// #else
+//     regdata = readRegister(REG_FIFO);
+// #endif    
+//     printHEXByte(regdata);
+//     PRINT_CSTSTR(" ");
 
-  }
-  digitalWrite(_NSS, HIGH);
+//   }
+//   digitalWrite(_NSS, HIGH);
 
-#ifdef USE_SPI_TRANSACTION
-  SPI.endTransaction();
-#endif
+// #ifdef USE_SPI_TRANSACTION
+//   SPI.endTransaction();
+// #endif
 
-}
+// }
 
-void SX127XLT::printSXBufferASCII(uint8_t start, uint8_t end)
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("printSXBufferASCII)");
-#endif
+// void SX127XLT::printSXBufferASCII(uint8_t start, uint8_t end)
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("printSXBufferASCII)");
+// #endif
 
-  uint8_t index, regdata;
-  setMode(MODE_STDBY_RC);
+//   uint8_t index, regdata;
+//   setMode(MODE_STDBY_RC);
 
-  writeRegister(REG_FIFOADDRPTR, start);      //and save in FIFO access ptr
+//   writeRegister(REG_FIFOADDRPTR, start);      //and save in FIFO access ptr
 
-#ifdef USE_SPI_TRANSACTION   //to use SPI_TRANSACTION enable define at beginning of CPP file 
-  SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
-#endif
+// #ifdef USE_SPI_TRANSACTION   //to use SPI_TRANSACTION enable define at beginning of CPP file 
+//   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
+// #endif
 
-  digitalWrite(_NSS, LOW);                    //start the burst read
+//   digitalWrite(_NSS, LOW);                    //start the burst read
   
-#if defined ARDUINO || defined USE_ARDUPI  
-  SPI.transfer(REG_FIFO);
-#endif
+// #if defined ARDUINO || defined USE_ARDUPI  
+//   SPI.transfer(REG_FIFO);
+// #endif
 
-  for (index = start; index <= end; index++)
-  {
-#if defined ARDUINO || defined USE_ARDUPI   
-    regdata = SPI.transfer(0);
-#else
-    regdata = readRegister(REG_FIFO);
-#endif   
-    Serial.write(regdata);
-  }
-  digitalWrite(_NSS, HIGH);
+//   for (index = start; index <= end; index++)
+//   {
+// #if defined ARDUINO || defined USE_ARDUPI   
+//     regdata = SPI.transfer(0);
+// #else
+//     regdata = readRegister(REG_FIFO);
+// #endif   
+//     Serial.write(regdata);
+//   }
+//   digitalWrite(_NSS, HIGH);
 
-#ifdef USE_SPI_TRANSACTION
-  SPI.endTransaction();
-#endif
+// #ifdef USE_SPI_TRANSACTION
+//   SPI.endTransaction();
+// #endif
 
-}
+// }
 
-void SX127XLT::fillSXBuffer(uint8_t startaddress, uint8_t size, uint8_t character)
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("fillSXBuffer()");
-#endif
-  uint8_t index;
+// void SX127XLT::fillSXBuffer(uint8_t startaddress, uint8_t size, uint8_t character)
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("fillSXBuffer()");
+// #endif
+//   uint8_t index;
 
-  setMode(MODE_STDBY_RC);
-  writeRegister(REG_FIFOADDRPTR, startaddress);     //and save in FIFO access ptr
+//   setMode(MODE_STDBY_RC);
+//   writeRegister(REG_FIFOADDRPTR, startaddress);     //and save in FIFO access ptr
 
-#ifdef USE_SPI_TRANSACTION                          //to use SPI_TRANSACTION enable define at beginning of CPP file 
-  SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
-#endif
+// #ifdef USE_SPI_TRANSACTION                          //to use SPI_TRANSACTION enable define at beginning of CPP file 
+//   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
+// #endif
 
-  digitalWrite(_NSS, LOW);                          //start the burst write
+//   digitalWrite(_NSS, LOW);                          //start the burst write
 
-#if defined ARDUINO || defined USE_ARDUPI  
-  SPI.transfer(WREG_FIFO);
-#endif
+// #if defined ARDUINO || defined USE_ARDUPI  
+//   SPI.transfer(WREG_FIFO);
+// #endif
 
-  for (index = 0; index < size; index++)
-  {
-#if defined ARDUINO || defined USE_ARDUPI  
-    SPI.transfer(character);
-#else
-    writeRegister(WREG_FIFO, character);
-#endif        
-  }
+//   for (index = 0; index < size; index++)
+//   {
+// #if defined ARDUINO || defined USE_ARDUPI  
+//     SPI.transfer(character);
+// #else
+//     writeRegister(WREG_FIFO, character);
+// #endif        
+//   }
 
-  digitalWrite(_NSS, HIGH);
+//   digitalWrite(_NSS, HIGH);
 
-#ifdef USE_SPI_TRANSACTION
-  SPI.endTransaction();
-#endif
+// #ifdef USE_SPI_TRANSACTION
+//   SPI.endTransaction();
+// #endif
 
-}
+// }
 
-uint8_t SX127XLT::getByteSXBuffer(uint8_t addr)
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("getByteSXBuffer()");
-#endif
+// uint8_t SX127XLT::getByteSXBuffer(uint8_t addr)
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("getByteSXBuffer()");
+// #endif
 
-  uint8_t regdata;
-  setMode(MODE_STDBY_RC);                     //this is needed to ensure we can read from buffer OK.
+//   uint8_t regdata;
+//   setMode(MODE_STDBY_RC);                     //this is needed to ensure we can read from buffer OK.
 
-  writeRegister(REG_FIFOADDRPTR, addr);       //set FIFO access ptr to location
+//   writeRegister(REG_FIFOADDRPTR, addr);       //set FIFO access ptr to location
 
-#ifdef USE_SPI_TRANSACTION                    //to use SPI_TRANSACTION enable define at beginning of CPP file 
-  SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
-#endif
+// #ifdef USE_SPI_TRANSACTION                    //to use SPI_TRANSACTION enable define at beginning of CPP file 
+//   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
+// #endif
 
-  digitalWrite(_NSS, LOW);                    //start the burst read
-#if defined ARDUINO || defined USE_ARDUPI   
-  SPI.transfer(REG_FIFO);
-  regdata = SPI.transfer(0);
-#else
-  regdata = readRegister(REG_FIFO);
-#endif  
-  digitalWrite(_NSS, HIGH);
+//   digitalWrite(_NSS, LOW);                    //start the burst read
+// #if defined ARDUINO || defined USE_ARDUPI   
+//   SPI.transfer(REG_FIFO);
+//   regdata = SPI.transfer(0);
+// #else
+//   regdata = readRegister(REG_FIFO);
+// #endif  
+//   digitalWrite(_NSS, HIGH);
 
-#ifdef USE_SPI_TRANSACTION
-  SPI.endTransaction();
-#endif
+// #ifdef USE_SPI_TRANSACTION
+//   SPI.endTransaction();
+// #endif
 
-  return regdata;
-}
+//   return regdata;
+// }
 
-void SX127XLT::writeByteSXBuffer(uint8_t addr, uint8_t regdata)
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("writeByteSXBuffer");
-#endif
+// void SX127XLT::writeByteSXBuffer(uint8_t addr, uint8_t regdata)
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("writeByteSXBuffer");
+// #endif
 
-  setMode(MODE_STDBY_RC);                 //this is needed to ensure we can write to buffer OK.
+//   setMode(MODE_STDBY_RC);                 //this is needed to ensure we can write to buffer OK.
 
-  writeRegister(REG_FIFOADDRPTR, addr);   //set FIFO access ptr to location
+//   writeRegister(REG_FIFOADDRPTR, addr);   //set FIFO access ptr to location
 
-#ifdef USE_SPI_TRANSACTION                //to use SPI_TRANSACTION enable define at beginning of CPP file 
-  SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
-#endif
+// #ifdef USE_SPI_TRANSACTION                //to use SPI_TRANSACTION enable define at beginning of CPP file 
+//   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
+// #endif
 
-  digitalWrite(_NSS, LOW);                //start the burst read
-#if defined ARDUINO || defined USE_ARDUPI  
-  SPI.transfer(WREG_FIFO);
-  SPI.transfer(regdata);
-#else
-	writeRegister(WREG_FIFO,regdata);
-#endif  
-  digitalWrite(_NSS, HIGH);
+//   digitalWrite(_NSS, LOW);                //start the burst read
+// #if defined ARDUINO || defined USE_ARDUPI  
+//   SPI.transfer(WREG_FIFO);
+//   SPI.transfer(regdata);
+// #else
+// 	writeRegister(WREG_FIFO,regdata);
+// #endif  
+//   digitalWrite(_NSS, HIGH);
 
-#ifdef USE_SPI_TRANSACTION
-  SPI.endTransaction();
-#endif
+// #ifdef USE_SPI_TRANSACTION
+//   SPI.endTransaction();
+// #endif
 
-}
+// }
 
-void SX127XLT::startWriteSXBuffer(uint8_t ptr)
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("startWriteSXBuffer()");
-#endif
+// void SX127XLT::startWriteSXBuffer(uint8_t ptr)
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("startWriteSXBuffer()");
+// #endif
 
-  setMode(MODE_STDBY_RC);
+//   setMode(MODE_STDBY_RC);
 
-  _TXPacketL = 0;                               //this variable used to keep track of bytes written
-  writeRegister(REG_FIFOADDRPTR, ptr);          //set buffer access ptr
+//   _TXPacketL = 0;                               //this variable used to keep track of bytes written
+//   writeRegister(REG_FIFOADDRPTR, ptr);          //set buffer access ptr
 
-#ifdef USE_SPI_TRANSACTION                      //to use SPI_TRANSACTION enable define at beginning of CPP file 
-  SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
-#endif
+// #ifdef USE_SPI_TRANSACTION                      //to use SPI_TRANSACTION enable define at beginning of CPP file 
+//   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
+// #endif
 
-  digitalWrite(_NSS, LOW);
-#if defined ARDUINO || defined USE_ARDUPI  
-  SPI.transfer(WREG_FIFO);
-#endif  
-}
+//   digitalWrite(_NSS, LOW);
+// #if defined ARDUINO || defined USE_ARDUPI  
+//   SPI.transfer(WREG_FIFO);
+// #endif  
+// }
 
-uint8_t SX127XLT::endWriteSXBuffer()
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("endWriteSXBuffer()");
-#endif
+// uint8_t SX127XLT::endWriteSXBuffer()
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("endWriteSXBuffer()");
+// #endif
 
-  digitalWrite(_NSS, HIGH);
+//   digitalWrite(_NSS, HIGH);
 
-#ifdef USE_SPI_TRANSACTION
-  SPI.endTransaction();
-#endif
+// #ifdef USE_SPI_TRANSACTION
+//   SPI.endTransaction();
+// #endif
 
-  return _TXPacketL;
-}
+//   return _TXPacketL;
+// }
 
-void SX127XLT::startReadSXBuffer(uint8_t ptr)
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("startReadSXBuffer()");
-#endif
+// void SX127XLT::startReadSXBuffer(uint8_t ptr)
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("startReadSXBuffer()");
+// #endif
 
-  setMode(MODE_STDBY_RC);
-  _RXPacketL = 0;
-  writeRegister(REG_FIFOADDRPTR, ptr);           //set buffer access ptr
+//   setMode(MODE_STDBY_RC);
+//   _RXPacketL = 0;
+//   writeRegister(REG_FIFOADDRPTR, ptr);           //set buffer access ptr
 
-#ifdef USE_SPI_TRANSACTION                       //to use SPI_TRANSACTION enable define at beginning of CPP file 
-  SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
-#endif
+// #ifdef USE_SPI_TRANSACTION                       //to use SPI_TRANSACTION enable define at beginning of CPP file 
+//   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
+// #endif
 
-  digitalWrite(_NSS, LOW);                       //start the burst read
+//   digitalWrite(_NSS, LOW);                       //start the burst read
   
-#if defined ARDUINO || defined USE_ARDUPI  
-  SPI.transfer(REG_FIFO);
-#endif
-  //next line would be data = SPI.transfer(0);
-  //SPI interface ready for byte to read from
-}
+// #if defined ARDUINO || defined USE_ARDUPI  
+//   SPI.transfer(REG_FIFO);
+// #endif
+//   //next line would be data = SPI.transfer(0);
+//   //SPI interface ready for byte to read from
+// }
 
-uint8_t SX127XLT::endReadSXBuffer()
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("endReadSXBuffer()");
-#endif
+// uint8_t SX127XLT::endReadSXBuffer()
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("endReadSXBuffer()");
+// #endif
 
-  digitalWrite(_NSS, HIGH);
+//   digitalWrite(_NSS, HIGH);
 
-#ifdef USE_SPI_TRANSACTION
-  SPI.endTransaction();
-#endif
+// #ifdef USE_SPI_TRANSACTION
+//   SPI.endTransaction();
+// #endif
 
-  return _RXPacketL;
+//   return _RXPacketL;
 
-}
+// }
 
-void SX127XLT::writeUint8(uint8_t x)
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("writeUint8()");
-#endif
+// void SX127XLT::writeUint8(uint8_t x)
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("writeUint8()");
+// #endif
 
-#if defined ARDUINO || defined USE_ARDUPI
-  SPI.transfer(x);
-#else
-	writeRegister(WREG_FIFO, x);
-#endif  
+// #if defined ARDUINO || defined USE_ARDUPI
+//   SPI.transfer(x);
+// #else
+// 	writeRegister(WREG_FIFO, x);
+// #endif  
 
-  _TXPacketL++;                     //increment count of bytes written
-}
+//   _TXPacketL++;                     //increment count of bytes written
+// }
 
-uint8_t SX127XLT::readUint8()
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("readUint8()");
-#endif
+// uint8_t SX127XLT::readUint8()
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("readUint8()");
+// #endif
 
-  uint8_t x;
+//   uint8_t x;
 
-#if defined ARDUINO || defined USE_ARDUPI
-  x = SPI.transfer(0);
-#else
-	x = readRegister(REG_FIFO);
-#endif
+// #if defined ARDUINO || defined USE_ARDUPI
+//   x = SPI.transfer(0);
+// #else
+// 	x = readRegister(REG_FIFO);
+// #endif
 
-  _RXPacketL++;                      //increment count of bytes read
-  return (x);
-}
+//   _RXPacketL++;                      //increment count of bytes read
+//   return (x);
+// }
 
 
 uint8_t SX127XLT::readBytes(uint8_t *rxbuffer,   uint8_t size)
@@ -5178,242 +4929,242 @@ return savedOffset;
 }
 
 
-uint32_t SX127XLT::transmitReliable(uint8_t *txbuffer, uint8_t size, char txpackettype, char txdestination, char txsource, uint32_t txtimeout, int8_t txpower, uint8_t wait )
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("transmitAddressed()");
-#endif
+// uint32_t SX127XLT::transmitReliable(uint8_t *txbuffer, uint8_t size, char txpackettype, char txdestination, char txsource, uint32_t txtimeout, int8_t txpower, uint8_t wait )
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("transmitAddressed()");
+// #endif
 
-  uint16_t libraryCRC = 0xFFFF;                    //start value for CRC calc
-  uint8_t index, ptr;
-  uint8_t bufferdata;
-  uint32_t endtimeoutmS;
+//   uint16_t libraryCRC = 0xFFFF;                    //start value for CRC calc
+//   uint8_t index, ptr;
+//   uint8_t bufferdata;
+//   uint32_t endtimeoutmS;
 
-  if (size == 0)
-  {
-    return false;
-  }
+//   if (size == 0)
+//   {
+//     return false;
+//   }
 
-  setMode(MODE_STDBY_RC);
-  ptr = readRegister(REG_FIFOTXBASEADDR);         //retrieve the TXbase address pointer
-  writeRegister(REG_FIFOADDRPTR, ptr);            //and save in FIFO access ptr
+//   setMode(MODE_STDBY_RC);
+//   ptr = readRegister(REG_FIFOTXBASEADDR);         //retrieve the TXbase address pointer
+//   writeRegister(REG_FIFOADDRPTR, ptr);            //and save in FIFO access ptr
 
-#ifdef USE_SPI_TRANSACTION                       //to use SPI_TRANSACTION enable define at beginning of CPP file 
-  SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
-#endif
+// #ifdef USE_SPI_TRANSACTION                       //to use SPI_TRANSACTION enable define at beginning of CPP file 
+//   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
+// #endif
 
-  digitalWrite(_NSS, LOW);
+//   digitalWrite(_NSS, LOW);
 
-  /**************************************************************************
-	Added by C. Pham - Oct. 2020
-  **************************************************************************/  
+//   /**************************************************************************
+// 	Added by C. Pham - Oct. 2020
+//   **************************************************************************/  
 
-#if defined ARDUINO || defined USE_ARDUPI
-  SPI.transfer(WREG_FIFO);  
-  // we insert our header
-  SPI.transfer(txdestination);                    //Destination node
-  SPI.transfer(txpackettype);                     //Write the packet type
-  SPI.transfer(txsource);                         //Source node
-  SPI.transfer(_TXSeqNo);                         //Sequence number  
-#else
-	writeRegister(WREG_FIFO, txdestination);
-	writeRegister(WREG_FIFO, txpackettype);
-	writeRegister(WREG_FIFO, txsource);
-	writeRegister(WREG_FIFO, _TXSeqNo);
-#endif
+// #if defined ARDUINO || defined USE_ARDUPI
+//   SPI.transfer(WREG_FIFO);  
+//   // we insert our header
+//   SPI.transfer(txdestination);                    //Destination node
+//   SPI.transfer(txpackettype);                     //Write the packet type
+//   SPI.transfer(txsource);                         //Source node
+//   SPI.transfer(_TXSeqNo);                         //Sequence number  
+// #else
+// 	writeRegister(WREG_FIFO, txdestination);
+// 	writeRegister(WREG_FIFO, txpackettype);
+// 	writeRegister(WREG_FIFO, txsource);
+// 	writeRegister(WREG_FIFO, _TXSeqNo);
+// #endif
   
-  _TXPacketL = HEADER_SIZE + size;                //we have added 4 header bytes to size
+//   _TXPacketL = HEADER_SIZE + size;                //we have added 4 header bytes to size
   
-  libraryCRC = addCRC(txdestination, libraryCRC);  
-  libraryCRC = addCRC(txpackettype, libraryCRC);
-  libraryCRC = addCRC(txsource, libraryCRC);  
-  libraryCRC = addCRC(_TXSeqNo, libraryCRC);  
+//   libraryCRC = addCRC(txdestination, libraryCRC);  
+//   libraryCRC = addCRC(txpackettype, libraryCRC);
+//   libraryCRC = addCRC(txsource, libraryCRC);  
+//   libraryCRC = addCRC(_TXSeqNo, libraryCRC);  
 
-  /**************************************************************************
-	End by C. Pham - Oct. 2020
-  **************************************************************************/  
+//   /**************************************************************************
+// 	End by C. Pham - Oct. 2020
+//   **************************************************************************/  
   
-  /* original code
-   ***************
+//   /* original code
+//    ***************
     
-  SPI.transfer(txpackettype);                     //Write the packet type
-  SPI.transfer(txdestination);                    //Destination node
-  SPI.transfer(txsource);                         //Source node
-  _TXPacketL = 3 + size;                          //we have added 3 header bytes to size
+//   SPI.transfer(txpackettype);                     //Write the packet type
+//   SPI.transfer(txdestination);                    //Destination node
+//   SPI.transfer(txsource);                         //Source node
+//   _TXPacketL = 3 + size;                          //we have added 3 header bytes to size
 
-  libraryCRC = addCRC(txpackettype, libraryCRC);
-  libraryCRC = addCRC(txdestination, libraryCRC);
-  libraryCRC = addCRC(txsource, libraryCRC);
+//   libraryCRC = addCRC(txpackettype, libraryCRC);
+//   libraryCRC = addCRC(txdestination, libraryCRC);
+//   libraryCRC = addCRC(txsource, libraryCRC);
   
-  */
+//   */
 
-  for (index = 0; index <= 127; index++)
-  {
-    bufferdata = txbuffer[index];
-    libraryCRC = addCRC(bufferdata, libraryCRC);
-#if defined ARDUINO || defined USE_ARDUPI    
-    SPI.transfer(bufferdata);
-#else
-		writeRegister(WREG_FIFO, bufferdata);
-#endif      
-  }
-  digitalWrite(_NSS, HIGH);
+//   for (index = 0; index <= 127; index++)
+//   {
+//     bufferdata = txbuffer[index];
+//     libraryCRC = addCRC(bufferdata, libraryCRC);
+// #if defined ARDUINO || defined USE_ARDUPI    
+//     SPI.transfer(bufferdata);
+// #else
+// 		writeRegister(WREG_FIFO, bufferdata);
+// #endif      
+//   }
+//   digitalWrite(_NSS, HIGH);
 
-#ifdef USE_SPI_TRANSACTION
-  SPI.endTransaction();
-#endif
+// #ifdef USE_SPI_TRANSACTION
+//   SPI.endTransaction();
+// #endif
 
-  writeRegister(REG_PAYLOADLENGTH, _TXPacketL);
+//   writeRegister(REG_PAYLOADLENGTH, _TXPacketL);
 
-  setTxParams(txpower, RADIO_RAMP_DEFAULT);                       //TX power and ramp time
+//   setTxParams(txpower, RADIO_RAMP_DEFAULT);                       //TX power and ramp time
 
-  setDioIrqParams(IRQ_RADIO_ALL, IRQ_TX_DONE, 0, 0);              //set for IRQ on TX done
-  setTx(0);                                                       //TX timeout is not handled in setTX()
+//   setDioIrqParams(IRQ_RADIO_ALL, IRQ_TX_DONE, 0, 0);              //set for IRQ on TX done
+//   setTx(0);                                                       //TX timeout is not handled in setTX()
 
-  /**************************************************************************
-	Added by C. Pham - Oct. 2020
-  **************************************************************************/  
+//   /**************************************************************************
+// 	Added by C. Pham - Oct. 2020
+//   **************************************************************************/  
   
-  // increment packet sequence number
-  _TXSeqNo++;
+//   // increment packet sequence number
+//   _TXSeqNo++;
 
-  /**************************************************************************
-	End by C. Pham - Oct. 2020
-  **************************************************************************/
+//   /**************************************************************************
+// 	End by C. Pham - Oct. 2020
+//   **************************************************************************/
   
-  if (!wait)
-  {
-    return _TXPacketL;
-  }
+//   if (!wait)
+//   {
+//     return _TXPacketL;
+//   }
 
-  /**************************************************************************
-	Modified by C. Pham - Oct. 2020
-  **************************************************************************/
+//   /**************************************************************************
+// 	Modified by C. Pham - Oct. 2020
+//   **************************************************************************/
   
-  if (txtimeout == 0)
-  {
-#ifdef USE_POLLING
-    index = readRegister(REG_IRQFLAGS);
-    //poll the irq register for TXDone, bit 3
-    while ((bitRead(index, 3) == 0))
-      {
-        index = readRegister(REG_IRQFLAGS);
-      }                //Wait for pin to go high, TX finished
-#endif    
-  }
-  else
-  {
-    endtimeoutmS = (millis() + txtimeout);
-#ifdef USE_POLLING
+//   if (txtimeout == 0)
+//   {
+// #ifdef USE_POLLING
+//     index = readRegister(REG_IRQFLAGS);
+//     //poll the irq register for TXDone, bit 3
+//     while ((bitRead(index, 3) == 0))
+//       {
+//         index = readRegister(REG_IRQFLAGS);
+//       }                //Wait for pin to go high, TX finished
+// #endif    
+//   }
+//   else
+//   {
+//     endtimeoutmS = (millis() + txtimeout);
+// #ifdef USE_POLLING
 
-#ifdef SX127XDEBUG1
-  	PRINTLN_CSTSTR("TXDone using polling");
-#endif 
-    index = readRegister(REG_IRQFLAGS);
-    //poll the irq register for TXDone, bit 3
-    while ((bitRead(index, 3) == 0) && (millis() < endtimeoutmS))
-      {
-        index = readRegister(REG_IRQFLAGS);
-      }
-#endif    
-  }
+// #ifdef SX127XDEBUG1
+//   	PRINTLN_CSTSTR("TXDone using polling");
+// #endif 
+//     index = readRegister(REG_IRQFLAGS);
+//     //poll the irq register for TXDone, bit 3
+//     while ((bitRead(index, 3) == 0) && (millis() < endtimeoutmS))
+//       {
+//         index = readRegister(REG_IRQFLAGS);
+//       }
+// #endif    
+//   }
 
-  setMode(MODE_STDBY_RC);                                            //ensure we leave function with TX off
+//   setMode(MODE_STDBY_RC);                                            //ensure we leave function with TX off
 
-#ifdef USE_POLLING
-  if (bitRead(index, 3) == 0)
-#endif  
-  {
-    _IRQmsb = IRQ_TX_TIMEOUT;
-    return 0;
-  }
+// #ifdef USE_POLLING
+//   if (bitRead(index, 3) == 0)
+// #endif  
+//   {
+//     _IRQmsb = IRQ_TX_TIMEOUT;
+//     return 0;
+//   }
   
-	_AckStatus=0;
+// 	_AckStatus=0;
 
-	if (txpackettype & PKT_FLAG_ACK_REQ) {
-		uint8_t RXAckPacketL;
-		const uint8_t RXBUFFER_SIZE=3;
-		uint8_t RXBUFFER[RXBUFFER_SIZE];
+// 	if (txpackettype & PKT_FLAG_ACK_REQ) {
+// 		uint8_t RXAckPacketL;
+// 		const uint8_t RXBUFFER_SIZE=3;
+// 		uint8_t RXBUFFER[RXBUFFER_SIZE];
 
-#ifdef SX127XDEBUGACK
-		PRINTLN_CSTSTR("transmitReliable is waiting for an ACK");
-#endif
-#ifdef INVERTIQ_ON_ACK
-#ifdef SX127XDEBUGACK
-		PRINTLN_CSTSTR("invert IQ for ack reception");
-#endif
-		invertIQ(true);
-#endif
-		delay(10);			
-		//try to receive the ack
-		RXAckPacketL=receiveAddressed(RXBUFFER, RXBUFFER_SIZE, 2000, WAIT_RX);
+// #ifdef SX127XDEBUGACK
+// 		PRINTLN_CSTSTR("transmitReliable is waiting for an ACK");
+// #endif
+// #ifdef INVERTIQ_ON_ACK
+// #ifdef SX127XDEBUGACK
+// 		PRINTLN_CSTSTR("invert IQ for ack reception");
+// #endif
+// 		invertIQ(true);
+// #endif
+// 		delay(10);			
+// 		//try to receive the ack
+// 		RXAckPacketL=receiveAddressed(RXBUFFER, RXBUFFER_SIZE, 2000, WAIT_RX);
 
-#ifdef INVERTIQ_ON_ACK
-#ifdef SX127XDEBUGACK
-		PRINTLN_CSTSTR("set back IQ to normal");
-#endif
-		invertIQ(false);
-#endif
+// #ifdef INVERTIQ_ON_ACK
+// #ifdef SX127XDEBUGACK
+// 		PRINTLN_CSTSTR("set back IQ to normal");
+// #endif
+// 		invertIQ(false);
+// #endif
 		
-		if (RXAckPacketL) {
-#ifdef SX127XDEBUGACK
-			PRINT_CSTSTR("received ");
-			PRINT_VALUE("%d", RXAckPacketL);
-			PRINTLN_CSTSTR(" bytes");
-			PRINT_CSTSTR("dest: ");
-			PRINTLN_VALUE("%d", readRXDestination());
-			PRINT_CSTSTR("ptype: ");
-			PRINTLN_VALUE("%d", readRXPacketType());		
-			PRINT_CSTSTR("src: ");
-			PRINTLN_VALUE("%d", readRXSource());
-			PRINT_CSTSTR("seq: ");
-			PRINTLN_VALUE("%d", readRXSeqNo());				 
-#endif		
-			if ( (readRXSource()==(uint8_t)txdestination) && (readRXDestination()==(uint8_t)txsource) && (readRXPacketType()==PKT_TYPE_ACK) && (readRXSeqNo()==(_TXSeqNo-1)) ) {
-				//seems that we got the correct ack
-#ifdef SX127XDEBUGACK
-				PRINTLN_CSTSTR("ACK is for me!");
-#endif		
-				_AckStatus=1;
-				uint8_t value=RXBUFFER[2];
+// 		if (RXAckPacketL) {
+// #ifdef SX127XDEBUGACK
+// 			PRINT_CSTSTR("received ");
+// 			PRINT_VALUE("%d", RXAckPacketL);
+// 			PRINTLN_CSTSTR(" bytes");
+// 			PRINT_CSTSTR("dest: ");
+// 			PRINTLN_VALUE("%d", readRXDestination());
+// 			PRINT_CSTSTR("ptype: ");
+// 			PRINTLN_VALUE("%d", readRXPacketType());		
+// 			PRINT_CSTSTR("src: ");
+// 			PRINTLN_VALUE("%d", readRXSource());
+// 			PRINT_CSTSTR("seq: ");
+// 			PRINTLN_VALUE("%d", readRXSeqNo());				 
+// #endif		
+// 			if ( (readRXSource()==(uint8_t)txdestination) && (readRXDestination()==(uint8_t)txsource) && (readRXPacketType()==PKT_TYPE_ACK) && (readRXSeqNo()==(_TXSeqNo-1)) ) {
+// 				//seems that we got the correct ack
+// #ifdef SX127XDEBUGACK
+// 				PRINTLN_CSTSTR("ACK is for me!");
+// #endif		
+// 				_AckStatus=1;
+// 				uint8_t value=RXBUFFER[2];
 				
-				if (value & 0x80 ) // The SNR sign bit is 1
-				{
-					// Invert and divide by 4
-					value = ( ( ~value + 1 ) & 0xFF ) >> 2;
-					_PacketSNRinACK = -value;
-				}
-				else
-				{
-					// Divide by 4
-					_PacketSNRinACK = ( value & 0xFF ) >> 2;
-				}				
-			}
-			else {
-#ifdef SX127XDEBUGACK
-				PRINTLN_CSTSTR("not for me!");
-#endif			
-			}
-		}
-		else {
-#ifdef SX127XDEBUGACK
-		PRINTLN_CSTSTR("received nothing");		 
-#endif			
-		}
-	}
+// 				if (value & 0x80 ) // The SNR sign bit is 1
+// 				{
+// 					// Invert and divide by 4
+// 					value = ( ( ~value + 1 ) & 0xFF ) >> 2;
+// 					_PacketSNRinACK = -value;
+// 				}
+// 				else
+// 				{
+// 					// Divide by 4
+// 					_PacketSNRinACK = ( value & 0xFF ) >> 2;
+// 				}				
+// 			}
+// 			else {
+// #ifdef SX127XDEBUGACK
+// 				PRINTLN_CSTSTR("not for me!");
+// #endif			
+// 			}
+// 		}
+// 		else {
+// #ifdef SX127XDEBUGACK
+// 		PRINTLN_CSTSTR("received nothing");		 
+// #endif			
+// 		}
+// 	}
 	
-  /**************************************************************************
-	End by C. Pham - Oct. 2020
-  **************************************************************************/
+//   /**************************************************************************
+// 	End by C. Pham - Oct. 2020
+//   **************************************************************************/
 
-#ifdef SX127XDEBUG1
-  PRINTLN;
-  PRINT_CSTSTR("TXcrc,"); 
-  PRINTLN_HEX("%X",libraryCRC);
-#endif
+// #ifdef SX127XDEBUG1
+//   PRINTLN;
+//   PRINT_CSTSTR("TXcrc,"); 
+//   PRINTLN_HEX("%X",libraryCRC);
+// #endif
 
-  return ( ( (uint32_t) libraryCRC << 16) + (uint8_t) _TXPacketL ); 
-}
+//   return ( ( (uint32_t) libraryCRC << 16) + (uint8_t) _TXPacketL ); 
+// }
 
 
 uint16_t SX127XLT::addCRC(uint8_t data, uint16_t libraryCRC)
@@ -5432,276 +5183,276 @@ uint16_t SX127XLT::addCRC(uint8_t data, uint16_t libraryCRC)
 }
 
 
-uint32_t SX127XLT::receiveReliable(uint8_t *rxbuffer, uint8_t size, char packettype, char destination, char source, uint32_t rxtimeout, uint8_t wait )
-{
-//set packettype, destnode, source to ) for no matching check
+// uint32_t SX127XLT::receiveReliable(uint8_t *rxbuffer, uint8_t size, char packettype, char destination, char source, uint32_t rxtimeout, uint8_t wait )
+// {
+// //set packettype, destnode, source to ) for no matching check
 
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("receiveReliable()");
-#endif
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("receiveReliable()");
+// #endif
 
-  uint16_t libraryCRC = 0xFFFF;                    //start value for CRC calc
-  uint16_t index;
-  uint32_t endtimeoutmS;
-  uint8_t regdata;
+//   uint16_t libraryCRC = 0xFFFF;                    //start value for CRC calc
+//   uint16_t index;
+//   uint32_t endtimeoutmS;
+//   uint8_t regdata;
 
-  setMode(MODE_STDBY_RC);
-  regdata = readRegister(REG_FIFORXBASEADDR);                               //retrieve the RXbase address pointer
-  writeRegister(REG_FIFOADDRPTR, regdata);                                  //and save in FIFO access ptr
+//   setMode(MODE_STDBY_RC);
+//   regdata = readRegister(REG_FIFORXBASEADDR);                               //retrieve the RXbase address pointer
+//   writeRegister(REG_FIFOADDRPTR, regdata);                                  //and save in FIFO access ptr
 
-  setDioIrqParams(IRQ_RADIO_ALL, (IRQ_RX_DONE + IRQ_HEADER_VALID), 0, 0);  //set for IRQ on RX done
-  setRx(0);                                                                //no actual RX timeout in this function
+//   setDioIrqParams(IRQ_RADIO_ALL, (IRQ_RX_DONE + IRQ_HEADER_VALID), 0, 0);  //set for IRQ on RX done
+//   setRx(0);                                                                //no actual RX timeout in this function
   
-  if (!wait)
-  {
-    return 0;                                                              //not wait requested so no packet length to pass
-  }
+//   if (!wait)
+//   {
+//     return 0;                                                              //not wait requested so no packet length to pass
+//   }
 
-  /**************************************************************************
-	Modified by C. Pham - Oct. 2020
-  **************************************************************************/
+//   /**************************************************************************
+// 	Modified by C. Pham - Oct. 2020
+//   **************************************************************************/
   
-  if (rxtimeout == 0)
-  {
-#ifdef USE_POLLING
-    index = readRegister(REG_IRQFLAGS);
+//   if (rxtimeout == 0)
+//   {
+// #ifdef USE_POLLING
+//     index = readRegister(REG_IRQFLAGS);
 
-    //poll the irq register for ValidHeader, bit 4
-    while ((bitRead(index, 4) == 0))
-      {
-        index = readRegister(REG_IRQFLAGS);
-        // adding this small delay decreases the CPU load of the lora_gateway process to 4~5% instead of nearly 100%
-        // suggested by rertini (https://github.com/CongducPham/LowCostLoRaGw/issues/211)
-        // tests have shown no significant side effects
-        delay(1);        
-      }    
+//     //poll the irq register for ValidHeader, bit 4
+//     while ((bitRead(index, 4) == 0))
+//       {
+//         index = readRegister(REG_IRQFLAGS);
+//         // adding this small delay decreases the CPU load of the lora_gateway process to 4~5% instead of nearly 100%
+//         // suggested by rertini (https://github.com/CongducPham/LowCostLoRaGw/issues/211)
+//         // tests have shown no significant side effects
+//         delay(1);        
+//       }    
 
-		//_RXTimestamp start when a valid header has been received
-  	_RXTimestamp=millis();
+// 		//_RXTimestamp start when a valid header has been received
+//   	_RXTimestamp=millis();
 
-    //poll the irq register for RXDone, bit 6
-    while ((bitRead(index, 6) == 0))
-      {
-        index = readRegister(REG_IRQFLAGS);
-      }                ///Wait for DIO0 to go high, no timeout, RX DONE
-#endif    
-  }
-  else
-  {
-    endtimeoutmS = (millis() + rxtimeout);
-#ifdef USE_POLLING
+//     //poll the irq register for RXDone, bit 6
+//     while ((bitRead(index, 6) == 0))
+//       {
+//         index = readRegister(REG_IRQFLAGS);
+//       }                ///Wait for DIO0 to go high, no timeout, RX DONE
+// #endif    
+//   }
+//   else
+//   {
+//     endtimeoutmS = (millis() + rxtimeout);
+// #ifdef USE_POLLING
 
-#ifdef SX127XDEBUG1
-  	PRINTLN_CSTSTR("RXDone using polling");
-#endif 
-    index = readRegister(REG_IRQFLAGS);
+// #ifdef SX127XDEBUG1
+//   	PRINTLN_CSTSTR("RXDone using polling");
+// #endif 
+//     index = readRegister(REG_IRQFLAGS);
 
-    //poll the irq register for ValidHeader, bit 4
-    while ((bitRead(index, 4) == 0) && (millis() < endtimeoutmS))
-      {
-        index = readRegister(REG_IRQFLAGS);
-        delay(1);        
-      }    
+//     //poll the irq register for ValidHeader, bit 4
+//     while ((bitRead(index, 4) == 0) && (millis() < endtimeoutmS))
+//       {
+//         index = readRegister(REG_IRQFLAGS);
+//         delay(1);        
+//       }    
 
-		if (bitRead(index, 4)!=0) {
-#ifdef SX127XDEBUG1		
-  		PRINTLN_CSTSTR("Valid header detected");
-#endif
-    	//_RXTimestamp start when a valid header has been received
-    	_RXTimestamp=millis();
+// 		if (bitRead(index, 4)!=0) {
+// #ifdef SX127XDEBUG1		
+//   		PRINTLN_CSTSTR("Valid header detected");
+// #endif
+//     	//_RXTimestamp start when a valid header has been received
+//     	_RXTimestamp=millis();
 
-			//update endtimeoutmS to avoid timeout at the middle of a packet reception
-			endtimeoutmS = (_RXTimestamp + rxtimeout);
-    }
+// 			//update endtimeoutmS to avoid timeout at the middle of a packet reception
+// 			endtimeoutmS = (_RXTimestamp + rxtimeout);
+//     }
             
-    //poll the irq register for RXDone, bit 6
-    while ((bitRead(index, 6) == 0) && (millis() < endtimeoutmS))
-      {
-        index = readRegister(REG_IRQFLAGS);
-      }
-#endif    
-  }
+//     //poll the irq register for RXDone, bit 6
+//     while ((bitRead(index, 6) == 0) && (millis() < endtimeoutmS))
+//       {
+//         index = readRegister(REG_IRQFLAGS);
+//       }
+// #endif    
+//   }
 
-  //_RXDoneTimestamp start when the packet been fully received  
-  _RXDoneTimestamp=millis();
+//   //_RXDoneTimestamp start when the packet been fully received  
+//   _RXDoneTimestamp=millis();
       
-  setMode(MODE_STDBY_RC);                                            //ensure to stop further packet reception
+//   setMode(MODE_STDBY_RC);                                            //ensure to stop further packet reception
 
-#ifdef USE_POLLING
-  if (bitRead(index, 6) == 0)                                     //check if DIO still low, is so must be RX timeout
-#endif  
-  {
-    _IRQmsb = IRQ_RX_TIMEOUT;
-#ifdef SX127XDEBUG1    
-    PRINTLN_CSTSTR("RX timeout");
-#endif     
-    return 0;
-  }
+// #ifdef USE_POLLING
+//   if (bitRead(index, 6) == 0)                                     //check if DIO still low, is so must be RX timeout
+// #endif  
+//   {
+//     _IRQmsb = IRQ_RX_TIMEOUT;
+// #ifdef SX127XDEBUG1    
+//     PRINTLN_CSTSTR("RX timeout");
+// #endif     
+//     return 0;
+//   }
 
-  /**************************************************************************
-	End by C. Pham - Oct. 2020
-  **************************************************************************/
+//   /**************************************************************************
+// 	End by C. Pham - Oct. 2020
+//   **************************************************************************/
 
-  if ( readIrqStatus() != (IRQ_RX_DONE + IRQ_HEADER_VALID) )
-  {
-    return 0;                                                                //no RX done and header valid only, could be CRC error
-  }
+//   if ( readIrqStatus() != (IRQ_RX_DONE + IRQ_HEADER_VALID) )
+//   {
+//     return 0;                                                                //no RX done and header valid only, could be CRC error
+//   }
 
-  _RXPacketL = readRegister(REG_RXNBBYTES);
+//   _RXPacketL = readRegister(REG_RXNBBYTES);
   
-#ifdef USE_SPI_TRANSACTION   //to use SPI_TRANSACTION enable define at beginning of CPP file 
-  SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
-#endif
+// #ifdef USE_SPI_TRANSACTION   //to use SPI_TRANSACTION enable define at beginning of CPP file 
+//   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
+// #endif
 
-  digitalWrite(_NSS, LOW);                    //start the burst read
+//   digitalWrite(_NSS, LOW);                    //start the burst read
 
-  /**************************************************************************
-	Added by C. Pham - Oct. 2020
-  **************************************************************************/  
+//   /**************************************************************************
+// 	Added by C. Pham - Oct. 2020
+//   **************************************************************************/  
   
-#if defined ARDUINO || defined USE_ARDUPI
-  SPI.transfer(REG_FIFO);  
-  // we read our header
-  _RXDestination = SPI.transfer(0);
-  _RXPacketType = SPI.transfer(0);
-  _RXSource = SPI.transfer(0);
-  _RXSeqNo = SPI.transfer(0);
-#else
-  // we read our header
-  _RXDestination = readRegister(REG_FIFO);
-  _RXPacketType = readRegister(REG_FIFO);
-  _RXSource = readRegister(REG_FIFO);
-  _RXSeqNo = readRegister(REG_FIFO);
-#endif  
-  //the header is not passed to the user
-  _RXPacketL=_RXPacketL-HEADER_SIZE;
+// #if defined ARDUINO || defined USE_ARDUPI
+//   SPI.transfer(REG_FIFO);  
+//   // we read our header
+//   _RXDestination = SPI.transfer(0);
+//   _RXPacketType = SPI.transfer(0);
+//   _RXSource = SPI.transfer(0);
+//   _RXSeqNo = SPI.transfer(0);
+// #else
+//   // we read our header
+//   _RXDestination = readRegister(REG_FIFO);
+//   _RXPacketType = readRegister(REG_FIFO);
+//   _RXSource = readRegister(REG_FIFO);
+//   _RXSeqNo = readRegister(REG_FIFO);
+// #endif  
+//   //the header is not passed to the user
+//   _RXPacketL=_RXPacketL-HEADER_SIZE;
   
-  if (_RXPacketL > size)                      //check passed buffer is big enough for packet
-  {
-    _RXPacketL = size;                        //truncate packet if not enough space in passed buffer
-  }  
+//   if (_RXPacketL > size)                      //check passed buffer is big enough for packet
+//   {
+//     _RXPacketL = size;                        //truncate packet if not enough space in passed buffer
+//   }  
 
-  libraryCRC = addCRC(_RXDestination, libraryCRC);  
-  libraryCRC = addCRC(_RXPacketType, libraryCRC);
-  libraryCRC = addCRC(_RXSource, libraryCRC);  
-  libraryCRC = addCRC(_RXSeqNo, libraryCRC);
+//   libraryCRC = addCRC(_RXDestination, libraryCRC);  
+//   libraryCRC = addCRC(_RXPacketType, libraryCRC);
+//   libraryCRC = addCRC(_RXSource, libraryCRC);  
+//   libraryCRC = addCRC(_RXSeqNo, libraryCRC);
   
-  /**************************************************************************
-	End by C. Pham - Oct. 2020
-  **************************************************************************/  
+//   /**************************************************************************
+// 	End by C. Pham - Oct. 2020
+//   **************************************************************************/  
   
-  /* original code
-   ***************
+//   /* original code
+//    ***************
     
-  _RXPacketType = SPI.transfer(0);
-  _RXDestination = SPI.transfer(0);
-  _RXSource = SPI.transfer(0);
+//   _RXPacketType = SPI.transfer(0);
+//   _RXDestination = SPI.transfer(0);
+//   _RXSource = SPI.transfer(0);
   
-  libraryCRC = addCRC(_RXPacketType, libraryCRC);
-  libraryCRC = addCRC(_RXDestination, libraryCRC);
-  libraryCRC = addCRC(_RXSource, libraryCRC);
+//   libraryCRC = addCRC(_RXPacketType, libraryCRC);
+//   libraryCRC = addCRC(_RXDestination, libraryCRC);
+//   libraryCRC = addCRC(_RXSource, libraryCRC);
   
-  */
+//   */
   
-  for (index = 0; index < _RXPacketL; index++)
-  {
-#if defined ARDUINO || defined USE_ARDUPI  
-    regdata = SPI.transfer(0);
-#else
-    regdata = readRegister(REG_FIFO);
-#endif    
-    libraryCRC = addCRC(regdata, libraryCRC);
-    rxbuffer[index] = regdata;
-  }
-  digitalWrite(_NSS, HIGH);
+//   for (index = 0; index < _RXPacketL; index++)
+//   {
+// #if defined ARDUINO || defined USE_ARDUPI  
+//     regdata = SPI.transfer(0);
+// #else
+//     regdata = readRegister(REG_FIFO);
+// #endif    
+//     libraryCRC = addCRC(regdata, libraryCRC);
+//     rxbuffer[index] = regdata;
+//   }
+//   digitalWrite(_NSS, HIGH);
 
-#ifdef USE_SPI_TRANSACTION
-  SPI.endTransaction();
-#endif
+// #ifdef USE_SPI_TRANSACTION
+//   SPI.endTransaction();
+// #endif
 
-	if (packettype > 0)
-     {
-     if (_RXPacketType != packettype)
-        {
-         return 0x1000;                       //set bit 16 to indicate not matching packet type
-        }
-     }
+// 	if (packettype > 0)
+//      {
+//      if (_RXPacketType != packettype)
+//         {
+//          return 0x1000;                       //set bit 16 to indicate not matching packet type
+//         }
+//      }
   
-  if (destination > 0)
-     {
-     if (_RXDestination != destination)
-        {
-         return 0x20000;                      //set bit 17 to indicate not matching destintion node
-        }
-     }
+//   if (destination > 0)
+//      {
+//      if (_RXDestination != destination)
+//         {
+//          return 0x20000;                      //set bit 17 to indicate not matching destintion node
+//         }
+//      }
  
-  if (source > 0)
-     {
-     if (_RXSource != source)
-        {
-         return 0x40000;                      //set bit 18 to indicate not matching source node  
-        }
-     }  
+//   if (source > 0)
+//      {
+//      if (_RXSource != source)
+//         {
+//          return 0x40000;                      //set bit 18 to indicate not matching source node  
+//         }
+//      }  
 
-  /**************************************************************************
-	Added by C. Pham - Oct. 2020
-  **************************************************************************/ 
+//   /**************************************************************************
+// 	Added by C. Pham - Oct. 2020
+//   **************************************************************************/ 
   
-  //sender request an ACK
-	if ( (_RXPacketType & PKT_FLAG_ACK_REQ) && (_RXDestination==_DevAddr) ) {
-		uint8_t TXAckPacketL;
-		const uint8_t TXBUFFER_SIZE=3;
-		uint8_t TXBUFFER[TXBUFFER_SIZE];
+//   //sender request an ACK
+// 	if ( (_RXPacketType & PKT_FLAG_ACK_REQ) && (_RXDestination==_DevAddr) ) {
+// 		uint8_t TXAckPacketL;
+// 		const uint8_t TXBUFFER_SIZE=3;
+// 		uint8_t TXBUFFER[TXBUFFER_SIZE];
 		
-#ifdef SX127XDEBUGACK
-  	PRINT_CSTSTR("ACK requested by ");
-  	PRINTLN_VALUE("%d", _RXSource);
-  	PRINTLN_CSTSTR("ACK transmission turnaround safe wait...");
-#endif			
-#ifdef INVERTIQ_ON_ACK
-#ifdef SX127XDEBUGACK
-		PRINTLN_CSTSTR("invert IQ for ack transmission");
-#endif
-		invertIQ(true);
-#endif			
-		delay(100);
-		TXBUFFER[0]=2; //length
-		TXBUFFER[1]=0; //RFU
-		TXBUFFER[2]=readRegister(REG_PKTSNRVALUE); //SNR of received packet
+// #ifdef SX127XDEBUGACK
+//   	PRINT_CSTSTR("ACK requested by ");
+//   	PRINTLN_VALUE("%d", _RXSource);
+//   	PRINTLN_CSTSTR("ACK transmission turnaround safe wait...");
+// #endif			
+// #ifdef INVERTIQ_ON_ACK
+// #ifdef SX127XDEBUGACK
+// 		PRINTLN_CSTSTR("invert IQ for ack transmission");
+// #endif
+// 		invertIQ(true);
+// #endif			
+// 		delay(100);
+// 		TXBUFFER[0]=2; //length
+// 		TXBUFFER[1]=0; //RFU
+// 		TXBUFFER[2]=readRegister(REG_PKTSNRVALUE); //SNR of received packet
 		
-		uint8_t saveTXSeqNo=_TXSeqNo;
-		_TXSeqNo=_RXSeqNo;
-		// use -1 as txpower to use default setting
-		TXAckPacketL=transmitAddressed(TXBUFFER, 3, PKT_TYPE_ACK, _RXSource, _DevAddr, 10000, -1, WAIT_TX);	
+// 		uint8_t saveTXSeqNo=_TXSeqNo;
+// 		_TXSeqNo=_RXSeqNo;
+// 		// use -1 as txpower to use default setting
+// 		TXAckPacketL=transmitAddressed(TXBUFFER, 3, PKT_TYPE_ACK, _RXSource, _DevAddr, 10000, -1, WAIT_TX);	
 
-#ifdef SX127XDEBUGACK
-		if (TXAckPacketL)
-  		PRINTLN_CSTSTR("ACK sent");
-  	else	
-  		PRINTLN_CSTSTR("error when sending ACK"); 
-#endif
-#ifdef INVERTIQ_ON_ACK
-#ifdef SX127XDEBUGACK
-		PRINTLN_CSTSTR("set back IQ to normal");
-#endif
-		invertIQ(false);
-#endif	
+// #ifdef SX127XDEBUGACK
+// 		if (TXAckPacketL)
+//   		PRINTLN_CSTSTR("ACK sent");
+//   	else	
+//   		PRINTLN_CSTSTR("error when sending ACK"); 
+// #endif
+// #ifdef INVERTIQ_ON_ACK
+// #ifdef SX127XDEBUGACK
+// 		PRINTLN_CSTSTR("set back IQ to normal");
+// #endif
+// 		invertIQ(false);
+// #endif	
 		
-		_TXSeqNo=saveTXSeqNo;
-	}
+// 		_TXSeqNo=saveTXSeqNo;
+// 	}
 
-  /**************************************************************************
-	End by C. Pham - Oct. 2020
-  **************************************************************************/ 	
+//   /**************************************************************************
+// 	End by C. Pham - Oct. 2020
+//   **************************************************************************/ 	
 
-#ifdef SX127XDEBUG1
-  PRINTLN;
-  PRINT_CSTSTR("RXcrc,"); 
-  PRINTLN_HEX("%X",libraryCRC);
-#endif
+// #ifdef SX127XDEBUG1
+//   PRINTLN;
+//   PRINT_CSTSTR("RXcrc,"); 
+//   PRINTLN_HEX("%X",libraryCRC);
+// #endif
 
-  return ( ( (uint32_t) libraryCRC << 16) + (uint8_t) _RXPacketL ); 
-}
+//   return ( ( (uint32_t) libraryCRC << 16) + (uint8_t) _RXPacketL ); 
+// }
 
 // uint32_t SX127XLT::receiveFT(uint8_t *rxbuffer, uint8_t size, char packettype, char destination, char source, uint32_t rxtimeout, uint8_t wait )
 // {
@@ -6125,18 +5876,18 @@ void SX127XLT::CarrierSense(uint8_t cs, bool extendedIFS, bool onlyOnce) {
     CarrierSense3(DEFAULT_CAD_NUMBER);
 }
 
-uint16_t SX127XLT::CollisionAvoidance(uint8_t pl, uint8_t ca) {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("CollisionAvoidance()");
-#endif
+// uint16_t SX127XLT::CollisionAvoidance(uint8_t pl, uint8_t ca) {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("CollisionAvoidance()");
+// #endif
   
-  if (ca==1)
-  	// we force cad_number to 0 to skip the CAD procedure to test the collision avoidance mechanism
-  	// in a real deployment, set back to DEFAULT_CAD_NUMBER
-    return(CollisionAvoidance0(pl, 0 /* DEFAULT_CAD_NUMBER */));
+//   if (ca==1)
+//   	// we force cad_number to 0 to skip the CAD procedure to test the collision avoidance mechanism
+//   	// in a real deployment, set back to DEFAULT_CAD_NUMBER
+//     return(CollisionAvoidance0(pl, 0 /* DEFAULT_CAD_NUMBER */));
     
-  return(0);  
-}
+//   return(0);  
+// }
 
 // need to set cad_number to a value > 0
 // we advise using cad_number=3 for a SIFS and cad_number=9 for a DIFS
@@ -6507,221 +6258,221 @@ uint8_t SX127XLT::transmitRTSAddressed(uint8_t pl) {
 	return(TXRTSPacketL);
 }
 
-uint16_t SX127XLT::CollisionAvoidance0(uint8_t pl, uint8_t cad_number) {
+// uint16_t SX127XLT::CollisionAvoidance0(uint8_t pl, uint8_t cad_number) {
 
-  int e;
-	// P=0.1, i.e. 10%
-	// we mainly use P=0 in real deployment (see scientific papers for simulation studies)
-	uint8_t P=0;
-	uint8_t WL=7;
-	uint8_t W2=7;
-	//W2afterP1 will be 10 if W2=7
-	uint8_t W2afterP1=W2+3;
-	uint8_t W3=W2;
-  double difs;
-  uint16_t listenRTSduration;
-	bool forceListen=false;
-  unsigned long _startDoCad, _endDoCad;
-	uint8_t sf=getLoRaSF();
+//   int e;
+// 	// P=0.1, i.e. 10%
+// 	// we mainly use P=0 in real deployment (see scientific papers for simulation studies)
+// 	uint8_t P=0;
+// 	uint8_t WL=7;
+// 	uint8_t W2=7;
+// 	//W2afterP1 will be 10 if W2=7
+// 	uint8_t W2afterP1=W2+3;
+// 	uint8_t W3=W2;
+//   double difs;
+//   uint16_t listenRTSduration;
+// 	bool forceListen=false;
+//   unsigned long _startDoCad, _endDoCad;
+// 	uint8_t sf=getLoRaSF();
 	
-  // symbol time in ms
-  double ts = 1000.0 / (returnBandwidth() / ( 1 << sf));
+//   // symbol time in ms
+//   double ts = 1000.0 / (returnBandwidth() / ( 1 << sf));
 
-  //set difs to packet's preamble length, in ms
-  difs=(getPreamble()+((sf<7)?6.25:4.25))*ts;
+//   //set difs to packet's preamble length, in ms
+//   difs=(getPreamble()+((sf<7)?6.25:4.25))*ts;
   
-  // WL*DIFS+TOA(sizeof(RTS)), in ms
-  listenRTSduration=WL*(uint16_t)difs+getToA(HEADER_SIZE+1);
+//   // WL*DIFS+TOA(sizeof(RTS)), in ms
+//   listenRTSduration=WL*(uint16_t)difs+getToA(HEADER_SIZE+1);
 
-  PRINT_CSTSTR("--> CA\n");
+//   PRINT_CSTSTR("--> CA\n");
 
-#ifdef SX127XDEBUGRTS
-  PRINT_CSTSTR("--> CA: ts ");
-	PRINT_VALUE("%d", (uint16_t)ts);
-  PRINT_CSTSTR(" DIFS ");
-	PRINT_VALUE("%d", (uint16_t)difs);
-	PRINT_CSTSTR(" listenRTSduration ");
-	PRINTLN_VALUE("%d", listenRTSduration);			 
-#endif
+// #ifdef SX127XDEBUGRTS
+//   PRINT_CSTSTR("--> CA: ts ");
+// 	PRINT_VALUE("%d", (uint16_t)ts);
+//   PRINT_CSTSTR(" DIFS ");
+// 	PRINT_VALUE("%d", (uint16_t)difs);
+// 	PRINT_CSTSTR(" listenRTSduration ");
+// 	PRINTLN_VALUE("%d", listenRTSduration);			 
+// #endif
 
-	// first we try to see whether can detect activity
-  if (cad_number) {
-  	// check for free channel
-    _startDoCad=millis();
-    e = doCAD(cad_number);
-    _endDoCad=millis();
+// 	// first we try to see whether can detect activity
+//   if (cad_number) {
+//   	// check for free channel
+//     _startDoCad=millis();
+//     e = doCAD(cad_number);
+//     _endDoCad=millis();
     
-    PRINT_CSTSTR("--> --> CA: CAD ");
-  	PRINT_VALUE("%d",_endDoCad-_startDoCad);
-    PRINTLN;    
-  }
-  else
-  	e==0;
+//     PRINT_CSTSTR("--> --> CA: CAD ");
+//   	PRINT_VALUE("%d",_endDoCad-_startDoCad);
+//     PRINTLN;    
+//   }
+//   else
+//   	e==0;
   
-  // we detected activity!
-  // since there is low probability of false positive
-  // it means that there is an ongoing transmission
-  // so we return the toa of the maximum packet length, i.e. 255 bytes
-  if (e!=0) {
-#ifdef SX127XDEBUGRTS
-  	PRINT_CSTSTR("--> CA: BUSY DEFER BY MAX_TOA ");
-		PRINTLN_VALUE("%d", getToA(255));			 
-#endif  
-  	return(getToA(255));
-	}
-	// here e==0 so we detected no activity
-	// run the proposed channel access mechanism
-	// see scientific article
+//   // we detected activity!
+//   // since there is low probability of false positive
+//   // it means that there is an ongoing transmission
+//   // so we return the toa of the maximum packet length, i.e. 255 bytes
+//   if (e!=0) {
+// #ifdef SX127XDEBUGRTS
+//   	PRINT_CSTSTR("--> CA: BUSY DEFER BY MAX_TOA ");
+// 		PRINTLN_VALUE("%d", getToA(255));			 
+// #endif  
+//   	return(getToA(255));
+// 	}
+// 	// here e==0 so we detected no activity
+// 	// run the proposed channel access mechanism
+// 	// see scientific article
 
-	//[0,100]	
-#ifdef ARDUINO                
-  uint8_t myP = random(100+1);
-#else
-  uint8_t myP = rand() % 100;
-#endif		
+// 	//[0,100]	
+// #ifdef ARDUINO                
+//   uint8_t myP = random(100+1);
+// #else
+//   uint8_t myP = rand() % 100;
+// #endif		
 
-#ifdef SX127XDEBUGRTS
-  	PRINT_CSTSTR("--> CA: FREE, INITIATE CA ");
-  	PRINT_CSTSTR("P=");
-  	PRINT_VALUE("%d", P);
-  	PRINT_CSTSTR(" myP=");
-		PRINTLN_VALUE("%d", myP);			 
-#endif 
+// #ifdef SX127XDEBUGRTS
+//   	PRINT_CSTSTR("--> CA: FREE, INITIATE CA ");
+//   	PRINT_CSTSTR("P=");
+//   	PRINT_VALUE("%d", P);
+//   	PRINT_CSTSTR(" myP=");
+// 		PRINTLN_VALUE("%d", myP);			 
+// #endif 
 	
-	// we will break from this infinite loop with a return
-	while (1) {
+// 	// we will break from this infinite loop with a return
+// 	while (1) {
 	
-		// 0<= myP <=P then go to phase 2
-		// if myP>P we start at phase 1 to listen for RTS
-		if (myP>P || forceListen) {
+// 		// 0<= myP <=P then go to phase 2
+// 		// if myP>P we start at phase 1 to listen for RTS
+// 		if (myP>P || forceListen) {
 	
-			uint8_t RXRTSPacketL;
-			const uint8_t RXBUFFER_SIZE=1;
-			uint8_t RXBUFFER[RXBUFFER_SIZE];
+// 			uint8_t RXRTSPacketL;
+// 			const uint8_t RXBUFFER_SIZE=1;
+// 			uint8_t RXBUFFER[RXBUFFER_SIZE];
 
-#ifdef SX127XDEBUGRTS
-			PRINT_CSTSTR("--> CA: LISTEN ");
-			if (forceListen)
-				PRINTLN_CSTSTR("P2");
-			else
-				PRINTLN_CSTSTR("P1");			
+// #ifdef SX127XDEBUGRTS
+// 			PRINT_CSTSTR("--> CA: LISTEN ");
+// 			if (forceListen)
+// 				PRINTLN_CSTSTR("P2");
+// 			else
+// 				PRINTLN_CSTSTR("P1");			
 							 
-			PRINTLN_CSTSTR("--> CA: WAIT FOR RTS");
-#endif
+// 			PRINTLN_CSTSTR("--> CA: WAIT FOR RTS");
+// #endif
 		
-			//try to receive the RTS
-			RXRTSPacketL=receiveRTSAddressed(RXBUFFER, RXBUFFER_SIZE, listenRTSduration, WAIT_RX);
+// 			//try to receive the RTS
+// 			RXRTSPacketL=receiveRTSAddressed(RXBUFFER, RXBUFFER_SIZE, listenRTSduration, WAIT_RX);
 		
-			// length is 1 indicates an RTS
-			if (RXRTSPacketL==1) {
-#ifdef SX127XDEBUGRTS
-				PRINT_CSTSTR("--> CA: RECEIVE RTS(");
-				PRINT_VALUE("%d", RXBUFFER[0]);
-				PRINT_CSTSTR(") FROM ");
-				PRINTLN_VALUE("%d", readRXSource());
-				PRINT_CSTSTR("--> CA: NAV(RTS) FOR listenRTSduration+W3*DIFS+ToA(");
-				PRINT_VALUE("%d", RXBUFFER[0]);
-				PRINT_CSTSTR(") ");						
-				PRINT_VALUE("%d", listenRTSduration+W3*(uint16_t)difs+getToA(RXBUFFER[0]));
-				PRINTLN_CSTSTR(" ms"); 
-#endif		
-				return(listenRTSduration+W3*(uint16_t)difs+getToA(RXBUFFER[0]));
-			}
-			else 
-			//indicate a longer data packet
-			if (RXRTSPacketL>1) {
-#ifdef SX127XDEBUGRTS
-				PRINT_CSTSTR("--> CA: ValidHeader FOR DATA DEFER BY MAX_TOA ");
-				PRINTLN_VALUE("%d", getToA(255));			 
-#endif  
-				return(getToA(255));	
-			}
-			else {
-#ifdef SX127XDEBUGRTS
-				PRINTLN_CSTSTR("--> CA: NO RTS");		 
-#endif		
-			}
-		}		
+// 			// length is 1 indicates an RTS
+// 			if (RXRTSPacketL==1) {
+// #ifdef SX127XDEBUGRTS
+// 				PRINT_CSTSTR("--> CA: RECEIVE RTS(");
+// 				PRINT_VALUE("%d", RXBUFFER[0]);
+// 				PRINT_CSTSTR(") FROM ");
+// 				PRINTLN_VALUE("%d", readRXSource());
+// 				PRINT_CSTSTR("--> CA: NAV(RTS) FOR listenRTSduration+W3*DIFS+ToA(");
+// 				PRINT_VALUE("%d", RXBUFFER[0]);
+// 				PRINT_CSTSTR(") ");						
+// 				PRINT_VALUE("%d", listenRTSduration+W3*(uint16_t)difs+getToA(RXBUFFER[0]));
+// 				PRINTLN_CSTSTR(" ms"); 
+// #endif		
+// 				return(listenRTSduration+W3*(uint16_t)difs+getToA(RXBUFFER[0]));
+// 			}
+// 			else 
+// 			//indicate a longer data packet
+// 			if (RXRTSPacketL>1) {
+// #ifdef SX127XDEBUGRTS
+// 				PRINT_CSTSTR("--> CA: ValidHeader FOR DATA DEFER BY MAX_TOA ");
+// 				PRINTLN_VALUE("%d", getToA(255));			 
+// #endif  
+// 				return(getToA(255));	
+// 			}
+// 			else {
+// #ifdef SX127XDEBUGRTS
+// 				PRINTLN_CSTSTR("--> CA: NO RTS");		 
+// #endif		
+// 			}
+// 		}		
 
-    // wait for random number of DIFS 
-    // [0, W2] if direct to phase 2
-    // [0, W2afterP1] if phase 2 after phase 1
-    // [0, W3] in phase 3
-    uint8_t w;
+//     // wait for random number of DIFS 
+//     // [0, W2] if direct to phase 2
+//     // [0, W2afterP1] if phase 2 after phase 1
+//     // [0, W3] in phase 3
+//     uint8_t w;
         
-		// we are actually finishing the second listening period
-		// we backoff before transmitting W3*DIFS
-		if (forceListen) {
-#ifdef SX127XDEBUGRTS
-			PRINT_CSTSTR("--> CA: P3 W3=");
-			PRINTLN_VALUE("%d", W3);	 
-#endif
-#ifdef ARDUINO		
-			w = random(0,W3+1);
-#else
-			w = rand() % (W3+1);
-#endif			
-		}
-		else {	
-			// we were in phase 1
-			if (myP>P) {
-#ifdef SX127XDEBUGRTS
-				PRINT_CSTSTR("--> CA: P1->P2 W2afterP1=");
-				PRINTLN_VALUE("%d", W2afterP1);	 
-#endif			  
-#ifdef ARDUINO			          
-				w = random(0,W2afterP1+1);
-#else
-				w = rand() % (W2afterP1+1);
-#endif								
-			}	
-			else {
-#ifdef SX127XDEBUGRTS
-				PRINT_CSTSTR("--> CA: direct P2 W2=");
-				PRINTLN_VALUE("%d", W2);	 
-#endif			
-#ifdef ARDUINO			
-				w = random(0,W2+1);	
-#else		
-				w = rand() % (W2+1);
-#endif		
-			}		
-		}
+// 		// we are actually finishing the second listening period
+// 		// we backoff before transmitting W3*DIFS
+// 		if (forceListen) {
+// #ifdef SX127XDEBUGRTS
+// 			PRINT_CSTSTR("--> CA: P3 W3=");
+// 			PRINTLN_VALUE("%d", W3);	 
+// #endif
+// #ifdef ARDUINO		
+// 			w = random(0,W3+1);
+// #else
+// 			w = rand() % (W3+1);
+// #endif			
+// 		}
+// 		else {	
+// 			// we were in phase 1
+// 			if (myP>P) {
+// #ifdef SX127XDEBUGRTS
+// 				PRINT_CSTSTR("--> CA: P1->P2 W2afterP1=");
+// 				PRINTLN_VALUE("%d", W2afterP1);	 
+// #endif			  
+// #ifdef ARDUINO			          
+// 				w = random(0,W2afterP1+1);
+// #else
+// 				w = rand() % (W2afterP1+1);
+// #endif								
+// 			}	
+// 			else {
+// #ifdef SX127XDEBUGRTS
+// 				PRINT_CSTSTR("--> CA: direct P2 W2=");
+// 				PRINTLN_VALUE("%d", W2);	 
+// #endif			
+// #ifdef ARDUINO			
+// 				w = random(0,W2+1);	
+// #else		
+// 				w = rand() % (W2+1);
+// #endif		
+// 			}		
+// 		}
 		
-#ifdef SX127XDEBUGRTS
-		PRINT_CSTSTR("--> CA: WAIT FOR ");
-		PRINT_VALUE("%d", w);
-		PRINTLN_CSTSTR(" DIFS");		 
-#endif
+// #ifdef SX127XDEBUGRTS
+// 		PRINT_CSTSTR("--> CA: WAIT FOR ");
+// 		PRINT_VALUE("%d", w);
+// 		PRINTLN_CSTSTR(" DIFS");		 
+// #endif
 
-		if (_lowPowerFctPtr==NULL)
-			delay(w*(uint16_t)difs);
-		else
-			(*_lowPowerFctPtr)(w*(uint16_t)difs);
+// 		if (_lowPowerFctPtr==NULL)
+// 			delay(w*(uint16_t)difs);
+// 		else
+// 			(*_lowPowerFctPtr)(w*(uint16_t)difs);
 			
-		// if forceListen==true then this is the second time
-		// so we just exit after having waited for a random number of DIFS to send the data packet
-		// 
-		if (forceListen) {
-#ifdef SX127XDEBUGRTS
-			PRINTLN_CSTSTR("--> CA: EXIT, ALLOW DATA TRANSMIT");
-#endif		
-			return(0);
-		}	
-		// if forceListen==false then this is the first time for nodes starting directly at phase 2
-		else {	
-#ifdef SX127XDEBUGRTS
-			PRINTLN_CSTSTR("--> CA: SEND RTS");
-#endif			
+// 		// if forceListen==true then this is the second time
+// 		// so we just exit after having waited for a random number of DIFS to send the data packet
+// 		// 
+// 		if (forceListen) {
+// #ifdef SX127XDEBUGRTS
+// 			PRINTLN_CSTSTR("--> CA: EXIT, ALLOW DATA TRANSMIT");
+// #endif		
+// 			return(0);
+// 		}	
+// 		// if forceListen==false then this is the first time for nodes starting directly at phase 2
+// 		else {	
+// #ifdef SX127XDEBUGRTS
+// 			PRINTLN_CSTSTR("--> CA: SEND RTS");
+// #endif			
 		
-			// phase 2 where we send an RTS
-			transmitRTSAddressed(pl);
+// 			// phase 2 where we send an RTS
+// 			transmitRTSAddressed(pl);
 		
-			// go for another listening period
-			forceListen=true;
-		}
-	}
-}
+// 			// go for another listening period
+// 			forceListen=true;
+// 		}
+// 	}
+// }
 
 uint8_t	SX127XLT::invertIQ(bool invert)
 {
