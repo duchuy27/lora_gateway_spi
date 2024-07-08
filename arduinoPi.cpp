@@ -16,6 +16,8 @@ SerialPi::SerialPi(){
     timeOut = 1000;
 }
 
+timeval start_program, end_point;
+
 //Sets the data rate in bits per second (baud) for serial data transmission
 void SerialPi::begin(int serialSpeed){
 
@@ -526,6 +528,19 @@ void SPIPi::transfernb(char* tbuf, char* rbuf, uint32_t len) {
 			for (int i=0; i<len; i++)
 				rbuf[i]=tbuf[i];
 		}
+}
+void delay(long millis){
+	unistd::usleep(millis*1000);
+}
+long millis(){
+	long elapsedTime;
+	// stop timer
+    gettimeofday(&end_point, NULL);
+
+    // compute and print the elapsed time in millisec
+    elapsedTime = (end_point.tv_sec - start_program.tv_sec) * 1000.0;      // sec to ms
+    elapsedTime += (end_point.tv_usec - start_program.tv_usec) / 1000.0;   // us to ms
+    return elapsedTime;
 }
 
 SerialPi Serial = SerialPi();

@@ -376,7 +376,7 @@ void setup()
   PRINT_STR("%s\n", time_str);
   
   FLUSHOUTPUT;
-  usleep(500);
+  delay(500);
 }
 
 void packet_is_Error()
@@ -684,7 +684,7 @@ void loop(void)
 					else
 					if (checkForLateDownlinkJACC1) { 
 						// retry later, for RX2 (join)
-						usleep(DELAY_EXTDNW2);
+						delay(DELAY_EXTDNW2);
 						checkForLateDownlinkJACC1=false;
 						checkForLateDownlinkJACC2=true;
 					}				 			
@@ -692,7 +692,7 @@ void loop(void)
 						//we initiate the entire downlink check only for LoRaWAN, i.e. when raw mode is enabled
 						if (optRAW) { 
 							// retry later, for RX2 (data)
-							usleep(DELAY_EXTDNW2);
+							delay(DELAY_EXTDNW2);
 							checkForLateDownlinkRX2=true;
 						}
 					}    			

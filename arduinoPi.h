@@ -192,6 +192,9 @@ class SPIPi{
 	void transfernb(char* tbuf, char* rbuf, uint32_t len);
 };
 
+void delay(long millis);
+long millis();
+
 extern SPIPi SPI;
 extern SerialPi Serial;
 #endif
