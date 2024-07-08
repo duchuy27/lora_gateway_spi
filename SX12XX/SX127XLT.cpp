@@ -5861,20 +5861,20 @@ uint16_t SX127XLT::getToA(uint8_t pl) {
 // we advise using cad_number=3 for a SIFS and DIFS=3*SIFS
 #define DEFAULT_CAD_NUMBER    3
 
-void SX127XLT::CarrierSense(uint8_t cs, bool extendedIFS, bool onlyOnce) {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("CarrierSense()");
-#endif
+// void SX127XLT::CarrierSense(uint8_t cs, bool extendedIFS, bool onlyOnce) {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("CarrierSense()");
+// #endif
   
-  if (cs==1)
-    CarrierSense1(DEFAULT_CAD_NUMBER, extendedIFS, onlyOnce);
+//   if (cs==1)
+//     CarrierSense1(DEFAULT_CAD_NUMBER, extendedIFS, onlyOnce);
 
-  if (cs==2)
-    CarrierSense2(DEFAULT_CAD_NUMBER, extendedIFS);
+//   if (cs==2)
+//     CarrierSense2(DEFAULT_CAD_NUMBER, extendedIFS);
 
-  if (cs==3)
-    CarrierSense3(DEFAULT_CAD_NUMBER);
-}
+//   if (cs==3)
+//     CarrierSense3(DEFAULT_CAD_NUMBER);
+// }
 
 // uint16_t SX127XLT::CollisionAvoidance(uint8_t pl, uint8_t ca) {
 // #ifdef SX127XDEBUG1
