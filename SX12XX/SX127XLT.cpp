@@ -213,27 +213,27 @@ SX127XLT::SX127XLT()
 // }
 
 
-void SX127XLT::resetDevice()
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("resetDevice()");
-#endif
+// void SX127XLT::resetDevice()
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("resetDevice()");
+// #endif
 
-  if (_Device == DEVICE_SX1272)
-  {
-    digitalWrite(_NRESET, HIGH);
-    delay(2);
-    digitalWrite(_NRESET, LOW);
-    delay(20);
-  }
-  else
-  {
-    digitalWrite(_NRESET, LOW);
-    delay(2);
-    digitalWrite(_NRESET, HIGH);
-    delay(20);
-  }
-}
+//   if (_Device == DEVICE_SX1272)
+//   {
+//     digitalWrite(_NRESET, HIGH);
+//     delay(2);
+//     digitalWrite(_NRESET, LOW);
+//     delay(20);
+//   }
+//   else
+//   {
+//     digitalWrite(_NRESET, LOW);
+//     delay(2);
+//     digitalWrite(_NRESET, HIGH);
+//     delay(20);
+//   }
+// }
 
 
 void SX127XLT::setMode(uint8_t modeconfig)
@@ -411,36 +411,44 @@ void SX127XLT::printDevice()
 }
 
 
-uint8_t SX127XLT::getOperatingMode()
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("getOperatingMode()");
-#endif
+// uint8_t SX127XLT::getOperatingMode()
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("getOperatingMode()");
+// #endif
 
-  return readRegister(REG_OPMODE);
-}
-
-
-bool SX127XLT::isReceiveDone()
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("isReceiveDone()");
-#endif
-
-  return digitalRead(_RXDonePin);
-}
+//   return readRegister(REG_OPMODE);
+// }
 
 
-bool SX127XLT::isTransmitDone()
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("isTransmitDone()");
-#endif
+// bool SX127XLT::isReceiveDone()
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("isReceiveDone()");
+// #endif
 
-  return digitalRead(_TXDonePin);
-}
+//   return digitalRead(_RXDonePin);
+// }
+
+
+// bool SX127XLT::isTransmitDone()
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("isTransmitDone()");
+// #endif
+
+//   return digitalRead(_TXDonePin);
+// }
 
 //############################################
+
+void digitalWrite(string name, bool value){
+  if(name == "_NSS"){
+    if(value)
+      *((uint32_t *)temp + 1) = 1;
+    else *((uint32_t *)temp + 1) = 0;
+  } else if(name == )
+}
 uint8_t SX127XL::spi_read(uint32_t data){
   int t = 0;
 
@@ -2079,33 +2087,33 @@ void SX127XLT::printHEXByte0x(uint8_t temp)
 }
 
 
-bool SX127XLT::isRXdone()
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("isRXdone()");
-#endif
+// bool SX127XLT::isRXdone()
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("isRXdone()");
+// #endif
 
-  return digitalRead(_DIO0);
-}
+//   return digitalRead(_DIO0);
+// }
 
-bool SX127XLT::isTXdone()
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("isTXdone()");
-#endif
+// bool SX127XLT::isTXdone()
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("isTXdone()");
+// #endif
 
-  return digitalRead(_DIO0);
-}
+//   return digitalRead(_DIO0);
+// }
 
 
-bool SX127XLT::isRXdoneIRQ()
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("isRXdoneIRQ()");
-#endif
+// bool SX127XLT::isRXdoneIRQ()
+// {
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("isRXdoneIRQ()");
+// #endif
 
-  return (readRegister(REG_IRQFLAGS) & IRQ_RX_DONE);
-}
+//   return (readRegister(REG_IRQFLAGS) & IRQ_RX_DONE);
+// }
 
 
 bool SX127XLT::isTXdoneIRQ()
@@ -2186,9 +2194,7 @@ uint8_t SX127XLT::receive(uint8_t *rxbuffer, uint8_t size, uint32_t rxtimeout, u
     while ((bitRead(index, 6) == 0))
       {
         index = readRegister(REG_IRQFLAGS);
-      }  
-#else  
-    while (!digitalRead(_RXDonePin));                  ///Wait for DIO0 to go high, no timeout, RX DONE
+      }
 #endif    
   }
   else
@@ -2224,8 +2230,6 @@ uint8_t SX127XLT::receive(uint8_t *rxbuffer, uint8_t size, uint32_t rxtimeout, u
       {
         index = readRegister(REG_IRQFLAGS);
       }
-#else    
-    while (!digitalRead(_RXDonePin) && (millis() < endtimeoutmS));
 #endif    
   }
 
@@ -2240,9 +2244,7 @@ uint8_t SX127XLT::receive(uint8_t *rxbuffer, uint8_t size, uint32_t rxtimeout, u
   setMode(MODE_STDBY_RC);                                            //ensure to stop further packet reception
 
 #ifdef USE_POLLING
-  if (bitRead(index, 6) == 0)
-#else
-  if (!digitalRead(_RXDonePin))                                             //check if DIO still low, is so must be RX timeout
+  if (bitRead(index, 6) == 0)                                        
 #endif  
   {
     _IRQmsb = IRQ_RX_TIMEOUT;
@@ -2346,8 +2348,6 @@ uint8_t SX127XLT::receiveAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t rxt
       {
         index = readRegister(REG_IRQFLAGS);
       }
-#else  
-    while (!digitalRead(_RXDonePin));                  ///Wait for DIO0 to go high, no timeout, RX DONE
 #endif    
   }
   else
@@ -2383,8 +2383,6 @@ uint8_t SX127XLT::receiveAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t rxt
       {
         index = readRegister(REG_IRQFLAGS);
       }
-#else    
-    while (!digitalRead(_RXDonePin) && (millis() < endtimeoutmS));
 #endif    
   }
 
@@ -2400,8 +2398,6 @@ uint8_t SX127XLT::receiveAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t rxt
 
 #ifdef USE_POLLING
   if (bitRead(index, 6) == 0)
-#else
-  if (!digitalRead(_RXDonePin))                                             //check if DIO still low, is so must be RX timeout
 #endif  
   {
     _IRQmsb = IRQ_RX_TIMEOUT;
@@ -2609,8 +2605,6 @@ uint8_t SX127XLT::receiveRTSAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t 
       {
         index = readRegister(REG_IRQFLAGS);
       }
-#else  
-    while (!digitalRead(_RXDonePin));                  ///Wait for DIO0 to go high, no timeout, RX DONE
 #endif    
   }
   else
@@ -2649,8 +2643,6 @@ uint8_t SX127XLT::receiveRTSAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t 
       {
         index = readRegister(REG_IRQFLAGS);
       }
-#else    
-    while (!digitalRead(_RXDonePin) && (millis() < endtimeoutmS));
 #endif    
   }
 
@@ -2665,9 +2657,7 @@ uint8_t SX127XLT::receiveRTSAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t 
   setMode(MODE_STDBY_RC);                                            //ensure to stop further packet reception
 
 #ifdef USE_POLLING
-  if (bitRead(index, 6) == 0)
-#else
-  if (!digitalRead(_RXDonePin))                                             //check if DIO still low, is so must be RX timeout
+  if (bitRead(index, 6) == 0)                                           //check if DIO still low, is so must be RX timeout
 #endif  
   {
     _IRQmsb = IRQ_RX_TIMEOUT;
@@ -2952,8 +2942,6 @@ uint8_t SX127XLT::transmit(uint8_t *txbuffer, uint8_t size, uint32_t txtimeout, 
       {
         index = readRegister(REG_IRQFLAGS);
       }
-#else  
-    while (!digitalRead(_TXDonePin));                  //Wait for pin to go high, TX finished
 #endif    
   }
   else
@@ -2970,8 +2958,6 @@ uint8_t SX127XLT::transmit(uint8_t *txbuffer, uint8_t size, uint32_t txtimeout, 
       {
         index = readRegister(REG_IRQFLAGS);
       }
-#else    
-    while (!digitalRead(_TXDonePin) && (millis() < endtimeoutmS));
 #endif    
   }
 
@@ -2979,8 +2965,6 @@ uint8_t SX127XLT::transmit(uint8_t *txbuffer, uint8_t size, uint32_t txtimeout, 
 
 #ifdef USE_POLLING
   if (bitRead(index, 3) == 0)
-#else
-  if (!digitalRead(_TXDonePin))
 #endif  
   {
     _IRQmsb = IRQ_TX_TIMEOUT;
@@ -3105,9 +3089,7 @@ uint8_t SX127XLT::transmitAddressed(uint8_t *txbuffer, uint8_t size, char txpack
     while ((bitRead(index, 3) == 0))
       {
         index = readRegister(REG_IRQFLAGS);
-      }
-#else  
-    while (!digitalRead(_TXDonePin));                  //Wait for pin to go high, TX finished
+      }         
 #endif    
   }
   else
@@ -3124,8 +3106,6 @@ uint8_t SX127XLT::transmitAddressed(uint8_t *txbuffer, uint8_t size, char txpack
       {
         index = readRegister(REG_IRQFLAGS);
       }
-#else    
-    while (!digitalRead(_TXDonePin) && (millis() < endtimeoutmS));
 #endif    
   }
 
@@ -3133,8 +3113,6 @@ uint8_t SX127XLT::transmitAddressed(uint8_t *txbuffer, uint8_t size, char txpack
 
 #ifdef USE_POLLING
   if (bitRead(index, 3) == 0)
-#else
-  if (!digitalRead(_TXDonePin))
 #endif  
   {
     _IRQmsb = IRQ_TX_TIMEOUT;
@@ -3639,9 +3617,7 @@ uint8_t SX127XLT::receiveSXBuffer(uint8_t startaddr, uint32_t rxtimeout, uint8_t
     while ((bitRead(index, 6) == 0))
       {
         index = readRegister(REG_IRQFLAGS);
-      }  
-#else  
-    while (!digitalRead(_RXDonePin));                  ///Wait for DIO0 to go high, no timeout, RX DONE
+      }        
 #endif    
   }
   else
@@ -3669,8 +3645,6 @@ uint8_t SX127XLT::receiveSXBuffer(uint8_t startaddr, uint32_t rxtimeout, uint8_t
       {
         index = readRegister(REG_IRQFLAGS);
       }
-#else    
-    while (!digitalRead(_RXDonePin) && (millis() < endtimeoutmS));
 #endif    
   }
 
@@ -3680,9 +3654,7 @@ uint8_t SX127XLT::receiveSXBuffer(uint8_t startaddr, uint32_t rxtimeout, uint8_t
   setMode(MODE_STDBY_RC);                                            //ensure to stop further packet reception
 
 #ifdef USE_POLLING
-  if (bitRead(index, 6) == 0)
-#else
-  if (!digitalRead(_RXDonePin))                                             //check if DIO still low, is so must be RX timeout
+  if (bitRead(index, 6) == 0)                                         //check if DIO still low, is so must be RX timeout
 #endif  
   {
     _IRQmsb = IRQ_RX_TIMEOUT;
@@ -3755,9 +3727,7 @@ uint8_t SX127XLT::transmitSXBuffer(uint8_t startaddr, uint8_t length, uint32_t t
     while ((bitRead(index, 3) == 0))
       {
         index = readRegister(REG_IRQFLAGS);
-      }
-#else  
-    while (!digitalRead(_TXDonePin));                  //Wait for pin to go high, TX finished
+      }              //Wait for pin to go high, TX finished
 #endif    
   }
   else
@@ -3774,8 +3744,6 @@ uint8_t SX127XLT::transmitSXBuffer(uint8_t startaddr, uint8_t length, uint32_t t
       {
         index = readRegister(REG_IRQFLAGS);
       }
-#else    
-    while (!digitalRead(_TXDonePin) && (millis() < endtimeoutmS));
 #endif    
   }
 
@@ -4536,48 +4504,48 @@ uint8_t SX127XLT::readBufferChar(char *rxbuffer)
 }
 
 
-void SX127XLT::rxtxInit(int8_t pinRXEN, int8_t pinTXEN)
-{
-  //not used on current SX127x modules
+// void SX127XLT::rxtxInit(int8_t pinRXEN, int8_t pinTXEN)
+// {
+//   //not used on current SX127x modules
 
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("rxtxInit()");
-#endif
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("rxtxInit()");
+// #endif
 
-  _RXEN = pinRXEN;
-  _TXEN = pinTXEN;
+//   _RXEN = pinRXEN;
+//   _TXEN = pinTXEN;
 
-  pinMode(pinRXEN, OUTPUT);
-  digitalWrite(pinRXEN, LOW);           //pins needed for RX\TX switching
-  pinMode(pinTXEN, OUTPUT);
-  digitalWrite(pinTXEN, LOW);           //pins needed for RX\TX switching
-}
-
-
-void SX127XLT::rxEnable()
-{
-  //not used on current SX127x modules
-
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("rxEnable()");
-#endif
-
-  digitalWrite(_RXEN, HIGH);
-  digitalWrite(_TXEN, LOW);
-}
+//   pinMode(pinRXEN, OUTPUT);
+//   digitalWrite(pinRXEN, LOW);           //pins needed for RX\TX switching
+//   pinMode(pinTXEN, OUTPUT);
+//   digitalWrite(pinTXEN, LOW);           //pins needed for RX\TX switching
+// }
 
 
-void SX127XLT::txEnable()
-{
-  //not used on current SX127x modules
+// void SX127XLT::rxEnable()
+// {
+//   //not used on current SX127x modules
 
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("txEnable()");
-#endif
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("rxEnable()");
+// #endif
 
-  digitalWrite(_RXEN, LOW);
-  digitalWrite(_TXEN, HIGH);
-}
+//   digitalWrite(_RXEN, HIGH);
+//   digitalWrite(_TXEN, LOW);
+// }
+
+
+// void SX127XLT::txEnable()
+// {
+//   //not used on current SX127x modules
+
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("txEnable()");
+// #endif
+
+//   digitalWrite(_RXEN, LOW);
+//   digitalWrite(_TXEN, HIGH);
+// }
 
 
 void SX127XLT::setTXDirect()
@@ -4956,207 +4924,207 @@ void SX127XLT::fskCarrierOn(int8_t txpower)
 
 // }
 
-void SX127XLT::transmitFSKRTTY(uint8_t chartosend, uint8_t databits, uint8_t stopbits, uint8_t parity, uint16_t baudPerioduS, int8_t pin)
-{
-  //micros() will rollover at 4294967295 or 71mins 35secs
-  //assume slowest baud rate is 45 (baud period of 22222us) then with 11 bits max to send if routine starts 
-  //when micros() > (4294967295 - (22222 * 11) = 4294722855 = 0xFFFC4525 then it could overflow during send
-  //Rather than deal with rolloever in the middle of a character lets wait till it overflows and then
-  //start the character  
+// void SX127XLT::transmitFSKRTTY(uint8_t chartosend, uint8_t databits, uint8_t stopbits, uint8_t parity, uint16_t baudPerioduS, int8_t pin)
+// {
+//   //micros() will rollover at 4294967295 or 71mins 35secs
+//   //assume slowest baud rate is 45 (baud period of 22222us) then with 11 bits max to send if routine starts 
+//   //when micros() > (4294967295 - (22222 * 11) = 4294722855 = 0xFFFC4525 then it could overflow during send
+//   //Rather than deal with rolloever in the middle of a character lets wait till it overflows and then
+//   //start the character  
   
 
-  #ifdef SX127XDEBUG1
-  PRINT_CSTSTR("transmitFSKRTTY()");
-  #endif
+//   #ifdef SX127XDEBUG1
+//   PRINT_CSTSTR("transmitFSKRTTY()");
+//   #endif
    
-  uint8_t numbits;
-  uint32_t enduS;
-  uint8_t bitcount = 0;                       //set when a bit is 1
+//   uint8_t numbits;
+//   uint32_t enduS;
+//   uint8_t bitcount = 0;                       //set when a bit is 1
   
-  if (micros() > 0xFFFB6000)                  //check if micros would overflow within circa 300mS, approx 1 char at 45baud
-  {
-  #ifdef DEBUGFSKRTTY
-  PRINT_CSTSTR("Overflow pending - micros() = ");
-  PRINTLN_HEX("%lX",micros());
-  #endif
-  while (micros() > 0xFFFB6000);              //wait a short while until micros overflows to 0
-  #ifdef DEBUGFSKRTTY
-  PRINT_CSTSTR("Paused - micros() = ");
-  PRINTLN_HEX("%lX",micros());
-  #endif
-  }
+//   if (micros() > 0xFFFB6000)                  //check if micros would overflow within circa 300mS, approx 1 char at 45baud
+//   {
+//   #ifdef DEBUGFSKRTTY
+//   PRINT_CSTSTR("Overflow pending - micros() = ");
+//   PRINTLN_HEX("%lX",micros());
+//   #endif
+//   while (micros() > 0xFFFB6000);              //wait a short while until micros overflows to 0
+//   #ifdef DEBUGFSKRTTY
+//   PRINT_CSTSTR("Paused - micros() = ");
+//   PRINTLN_HEX("%lX",micros());
+//   #endif
+//   }
   
-  enduS = micros() + baudPerioduS;
-  setRfFrequencyDirect(_freqregH, _freqregM, _freqregL); //set carrier frequency  (low)
+//   enduS = micros() + baudPerioduS;
+//   setRfFrequencyDirect(_freqregH, _freqregM, _freqregL); //set carrier frequency  (low)
   
-  if (pin >= 0)
-  {
-   digitalWrite(pin, LOW); 
-  }
+//   if (pin >= 0)
+//   {
+//    digitalWrite(pin, LOW); 
+//   }
   
-  while (micros() < enduS);                   //start bit
+//   while (micros() < enduS);                   //start bit
   
-  for (numbits = 1;  numbits <= databits; numbits++) //send bits, LSB first
-  {
-    enduS = micros() + baudPerioduS;          //start the timer 
-    if ((chartosend & 0x01) != 0)             //test for bit set, a 1
-    {
-       bitcount++;
-       if (pin >= 0)
-       {
-       digitalWrite(pin, HIGH); 
-       }
-    setRfFrequencyDirect(_ShiftfreqregH, _ShiftfreqregM, _ShiftfreqregL); //set carrier frequency for a 1 
-    }
-    else
-    {
-       if (pin >= 0)
-       {
-       digitalWrite(pin, LOW); 
-       }     
-      setRfFrequencyDirect(_freqregH, _freqregM, _freqregL);           //set carrier frequency for a 0
-    }
-    chartosend = (chartosend >> 1);           //get the next bit
-    while (micros() < enduS);
-  }
+//   for (numbits = 1;  numbits <= databits; numbits++) //send bits, LSB first
+//   {
+//     enduS = micros() + baudPerioduS;          //start the timer 
+//     if ((chartosend & 0x01) != 0)             //test for bit set, a 1
+//     {
+//        bitcount++;
+//        if (pin >= 0)
+//        {
+//        digitalWrite(pin, HIGH); 
+//        }
+//     setRfFrequencyDirect(_ShiftfreqregH, _ShiftfreqregM, _ShiftfreqregL); //set carrier frequency for a 1 
+//     }
+//     else
+//     {
+//        if (pin >= 0)
+//        {
+//        digitalWrite(pin, LOW); 
+//        }     
+//       setRfFrequencyDirect(_freqregH, _freqregM, _freqregL);           //set carrier frequency for a 0
+//     }
+//     chartosend = (chartosend >> 1);           //get the next bit
+//     while (micros() < enduS);
+//   }
    
-   enduS = micros() + baudPerioduS;          //start the timer for possible parity bit
+//    enduS = micros() + baudPerioduS;          //start the timer for possible parity bit
    
-   switch (parity) 
-   {
-    case ParityNone:
-         break;
+//    switch (parity) 
+//    {
+//     case ParityNone:
+//          break;
     
-    case ParityZero:
-         setRfFrequencyDirect(_freqregH, _freqregM, _freqregL);           //set carrier frequency for a 0
-         while (micros() < enduS);
-		 break;
+//     case ParityZero:
+//          setRfFrequencyDirect(_freqregH, _freqregM, _freqregL);           //set carrier frequency for a 0
+//          while (micros() < enduS);
+// 		 break;
     
-    case ParityOne:
+//     case ParityOne:
          
-         setRfFrequencyDirect(_ShiftfreqregH, _ShiftfreqregM, _ShiftfreqregL);   //set carrier frequency for a 1
-         while (micros() < enduS);
-		 break;
+//          setRfFrequencyDirect(_ShiftfreqregH, _ShiftfreqregM, _ShiftfreqregL);   //set carrier frequency for a 1
+//          while (micros() < enduS);
+// 		 break;
 
-	case ParityOdd:
-         if (bitRead(bitcount, 0))                                         //test odd bit count, i.e. when bit 0 = 1 
-         {
-         setRfFrequencyDirect(_ShiftfreqregH, _ShiftfreqregM, _ShiftfreqregL);           //set carrier frequency for a 1 
-         }
-		 else
-         {
-         setRfFrequencyDirect(_freqregH, _freqregM, _freqregL);           //set carrier frequency for a 0 
-         }
-         while (micros() < enduS);
-		 break;
+// 	case ParityOdd:
+//          if (bitRead(bitcount, 0))                                         //test odd bit count, i.e. when bit 0 = 1 
+//          {
+//          setRfFrequencyDirect(_ShiftfreqregH, _ShiftfreqregM, _ShiftfreqregL);           //set carrier frequency for a 1 
+//          }
+// 		 else
+//          {
+//          setRfFrequencyDirect(_freqregH, _freqregM, _freqregL);           //set carrier frequency for a 0 
+//          }
+//          while (micros() < enduS);
+// 		 break;
 
-    case ParityEven:
-         if (bitRead(bitcount, 0))                                         //test odd bit count, i.e. when bit 0 = 1 
-         {
-         setRfFrequencyDirect(_freqregH, _freqregM, _freqregL);           //set carrier frequency for a 0 
-         }
-		 else
-         {
-         setRfFrequencyDirect(_ShiftfreqregH, _ShiftfreqregM, _ShiftfreqregL);             //set carrier frequency for a 1 
-         }
-		 while (micros() < enduS);
-         break; 
+//     case ParityEven:
+//          if (bitRead(bitcount, 0))                                         //test odd bit count, i.e. when bit 0 = 1 
+//          {
+//          setRfFrequencyDirect(_freqregH, _freqregM, _freqregL);           //set carrier frequency for a 0 
+//          }
+// 		 else
+//          {
+//          setRfFrequencyDirect(_ShiftfreqregH, _ShiftfreqregM, _ShiftfreqregL);             //set carrier frequency for a 1 
+//          }
+// 		 while (micros() < enduS);
+//          break; 
      
-    default:
-	     break;
-    } 
+//     default:
+// 	     break;
+//     } 
 
-  //stop bits, normally 1 or 2
-  enduS = micros() + (baudPerioduS * stopbits);
+//   //stop bits, normally 1 or 2
+//   enduS = micros() + (baudPerioduS * stopbits);
   
-  if (pin >= 0)
-  {
-  digitalWrite(pin, HIGH); 
-  }
+//   if (pin >= 0)
+//   {
+//   digitalWrite(pin, HIGH); 
+//   }
   
-  setRfFrequencyDirect(_ShiftfreqregH, _ShiftfreqregM, _ShiftfreqregL); //set carrier frequency
+//   setRfFrequencyDirect(_ShiftfreqregH, _ShiftfreqregM, _ShiftfreqregL); //set carrier frequency
   
-  while (micros() < enduS);
+//   while (micros() < enduS);
   
-}
+// }
 
 
-void SX127XLT::transmitFSKRTTY(uint8_t chartosend, uint16_t baudPerioduS, int8_t pin)
-{
-  //micros() will rollover at 4294967295 or 71mins 35secs
-  //assume slowest baud rate is 45 (baud period of 22222us) then with 11 bits max to send if routine starts 
-  //when micros() > (4294967295 - (22222 * 11) = 4294722855 = 0xFFFC4525 then it could overflow during send
-  //Rather than deal with rolloever in the middle of a character lets wait till it overflows and then
-  //start the character
-  //This overloaded version of transmitFSKRTTY() uses 1 start bit, 7 data bits, no parity and 2 stop bits. 
+// void SX127XLT::transmitFSKRTTY(uint8_t chartosend, uint16_t baudPerioduS, int8_t pin)
+// {
+//   //micros() will rollover at 4294967295 or 71mins 35secs
+//   //assume slowest baud rate is 45 (baud period of 22222us) then with 11 bits max to send if routine starts 
+//   //when micros() > (4294967295 - (22222 * 11) = 4294722855 = 0xFFFC4525 then it could overflow during send
+//   //Rather than deal with rolloever in the middle of a character lets wait till it overflows and then
+//   //start the character
+//   //This overloaded version of transmitFSKRTTY() uses 1 start bit, 7 data bits, no parity and 2 stop bits. 
   
 
-  #ifdef SX127XDEBUG1
-  PRINT_CSTSTR("transmitFSKRTTY()");
-  #endif
+//   #ifdef SX127XDEBUG1
+//   PRINT_CSTSTR("transmitFSKRTTY()");
+//   #endif
    
-  uint8_t numbits;
-  uint32_t enduS;
+//   uint8_t numbits;
+//   uint32_t enduS;
   
-  if (micros() > 0xFFFB6000)                  //check if micros would overflow within circa 300mS, approx 1 char at 45baud
-  {
-  #ifdef DEBUGFSKRTTY
-  PRINT_CSTSTR("Overflow pending - micros() = ");
-  PRINTLN_HEX("%lX",micros());
-  #endif
-  while (micros() > 0xFFFB6000);              //wait a short while until micros overflows to 0
-  #ifdef DEBUGFSKRTTY
-  PRINT_CSTSTR("Paused - micros() = ");
-  PRINTLN_HEX("%lX",micros());
-  #endif
-  }
+//   if (micros() > 0xFFFB6000)                  //check if micros would overflow within circa 300mS, approx 1 char at 45baud
+//   {
+//   #ifdef DEBUGFSKRTTY
+//   PRINT_CSTSTR("Overflow pending - micros() = ");
+//   PRINTLN_HEX("%lX",micros());
+//   #endif
+//   while (micros() > 0xFFFB6000);              //wait a short while until micros overflows to 0
+//   #ifdef DEBUGFSKRTTY
+//   PRINT_CSTSTR("Paused - micros() = ");
+//   PRINTLN_HEX("%lX",micros());
+//   #endif
+//   }
   
-  enduS = micros() + baudPerioduS;
-  setRfFrequencyDirect(_freqregH, _freqregM, _freqregL); //set carrier frequency  (low)
+//   enduS = micros() + baudPerioduS;
+//   setRfFrequencyDirect(_freqregH, _freqregM, _freqregL); //set carrier frequency  (low)
   
-  if (pin >= 0)
-  {
-   digitalWrite(pin, LOW); 
-  }
+//   if (pin >= 0)
+//   {
+//    digitalWrite(pin, LOW); 
+//   }
   
-  while (micros() < enduS);                   //start bit
+//   while (micros() < enduS);                   //start bit
   
-  for (numbits = 1;  numbits <= 7; numbits++) //send bits, LSB first
-  {
-    enduS = micros() + baudPerioduS;          //start the timer 
-    if ((chartosend & 0x01) != 0)             //test for bit set, a 1
-    {
-       if (pin >= 0)
-       {
-       digitalWrite(pin, HIGH); 
-       }
-    setRfFrequencyDirect(_ShiftfreqregH, _ShiftfreqregM, _ShiftfreqregL); //set carrier frequency for a 1 
-    }
-    else
-    {
-       if (pin >= 0)
-       {
-       digitalWrite(pin, LOW); 
-       }     
-      setRfFrequencyDirect(_freqregH, _freqregM, _freqregL);           //set carrier frequency for a 0
-    }
-    chartosend = (chartosend >> 1);           //get the next bit
-    while (micros() < enduS);
-  }
+//   for (numbits = 1;  numbits <= 7; numbits++) //send bits, LSB first
+//   {
+//     enduS = micros() + baudPerioduS;          //start the timer 
+//     if ((chartosend & 0x01) != 0)             //test for bit set, a 1
+//     {
+//        if (pin >= 0)
+//        {
+//        digitalWrite(pin, HIGH); 
+//        }
+//     setRfFrequencyDirect(_ShiftfreqregH, _ShiftfreqregM, _ShiftfreqregL); //set carrier frequency for a 1 
+//     }
+//     else
+//     {
+//        if (pin >= 0)
+//        {
+//        digitalWrite(pin, LOW); 
+//        }     
+//       setRfFrequencyDirect(_freqregH, _freqregM, _freqregL);           //set carrier frequency for a 0
+//     }
+//     chartosend = (chartosend >> 1);           //get the next bit
+//     while (micros() < enduS);
+//   }
    
-  //stop bits, normally 1 or 2
-  enduS = micros() + (baudPerioduS * 2);
+//   //stop bits, normally 1 or 2
+//   enduS = micros() + (baudPerioduS * 2);
   
-  if (pin >= 0)
-  {
-  digitalWrite(pin, HIGH); 
-  }
+//   if (pin >= 0)
+//   {
+//   digitalWrite(pin, HIGH); 
+//   }
   
-  setRfFrequencyDirect(_ShiftfreqregH, _ShiftfreqregM, _ShiftfreqregL); //set carrier frequency
+//   setRfFrequencyDirect(_ShiftfreqregH, _ShiftfreqregM, _ShiftfreqregL); //set carrier frequency
   
-  while (micros() < enduS);
+//   while (micros() < enduS);
   
-}
+// }
 
 
 
@@ -5330,9 +5298,7 @@ uint32_t SX127XLT::transmitReliable(uint8_t *txbuffer, uint8_t size, char txpack
     while ((bitRead(index, 3) == 0))
       {
         index = readRegister(REG_IRQFLAGS);
-      }
-#else  
-    while (!digitalRead(_TXDonePin));                  //Wait for pin to go high, TX finished
+      }                //Wait for pin to go high, TX finished
 #endif    
   }
   else
@@ -5349,8 +5315,6 @@ uint32_t SX127XLT::transmitReliable(uint8_t *txbuffer, uint8_t size, char txpack
       {
         index = readRegister(REG_IRQFLAGS);
       }
-#else    
-    while (!digitalRead(_TXDonePin) && (millis() < endtimeoutmS));
 #endif    
   }
 
@@ -5358,8 +5322,6 @@ uint32_t SX127XLT::transmitReliable(uint8_t *txbuffer, uint8_t size, char txpack
 
 #ifdef USE_POLLING
   if (bitRead(index, 3) == 0)
-#else
-  if (!digitalRead(_TXDonePin))
 #endif  
   {
     _IRQmsb = IRQ_TX_TIMEOUT;
@@ -5521,9 +5483,7 @@ uint32_t SX127XLT::receiveReliable(uint8_t *rxbuffer, uint8_t size, char packett
     while ((bitRead(index, 6) == 0))
       {
         index = readRegister(REG_IRQFLAGS);
-      }
-#else  
-    while (!digitalRead(_RXDonePin));                  ///Wait for DIO0 to go high, no timeout, RX DONE
+      }                ///Wait for DIO0 to go high, no timeout, RX DONE
 #endif    
   }
   else
@@ -5559,8 +5519,6 @@ uint32_t SX127XLT::receiveReliable(uint8_t *rxbuffer, uint8_t size, char packett
       {
         index = readRegister(REG_IRQFLAGS);
       }
-#else    
-    while (!digitalRead(_RXDonePin) && (millis() < endtimeoutmS));
 #endif    
   }
 
@@ -5570,9 +5528,7 @@ uint32_t SX127XLT::receiveReliable(uint8_t *rxbuffer, uint8_t size, char packett
   setMode(MODE_STDBY_RC);                                            //ensure to stop further packet reception
 
 #ifdef USE_POLLING
-  if (bitRead(index, 6) == 0)
-#else
-  if (!digitalRead(_RXDonePin))                                             //check if DIO still low, is so must be RX timeout
+  if (bitRead(index, 6) == 0)                                     //check if DIO still low, is so must be RX timeout
 #endif  
   {
     _IRQmsb = IRQ_RX_TIMEOUT;
@@ -5747,136 +5703,136 @@ uint32_t SX127XLT::receiveReliable(uint8_t *rxbuffer, uint8_t size, char packett
   return ( ( (uint32_t) libraryCRC << 16) + (uint8_t) _RXPacketL ); 
 }
 
-uint32_t SX127XLT::receiveFT(uint8_t *rxbuffer, uint8_t size, char packettype, char destination, char source, uint32_t rxtimeout, uint8_t wait )
-{
-//set packettype, destnode, source to ) for no matching check
+// uint32_t SX127XLT::receiveFT(uint8_t *rxbuffer, uint8_t size, char packettype, char destination, char source, uint32_t rxtimeout, uint8_t wait )
+// {
+// //set packettype, destnode, source to ) for no matching check
 
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("receiveReliable()");
-#endif
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("receiveReliable()");
+// #endif
 
-  uint16_t libraryCRC = 0xFFFF;                    //start value for CRC calc
-  uint16_t index;
-  uint32_t endtimeoutmS;
-  uint8_t regdata;
+//   uint16_t libraryCRC = 0xFFFF;                    //start value for CRC calc
+//   uint16_t index;
+//   uint32_t endtimeoutmS;
+//   uint8_t regdata;
 
-  setMode(MODE_STDBY_RC);
-  regdata = readRegister(REG_FIFORXBASEADDR);                               //retrieve the RXbase address pointer
-  writeRegister(REG_FIFOADDRPTR, regdata);                                  //and save in FIFO access ptr
+//   setMode(MODE_STDBY_RC);
+//   regdata = readRegister(REG_FIFORXBASEADDR);                               //retrieve the RXbase address pointer
+//   writeRegister(REG_FIFOADDRPTR, regdata);                                  //and save in FIFO access ptr
 
-  setDioIrqParams(IRQ_RADIO_ALL, (IRQ_RX_DONE + IRQ_HEADER_VALID), 0, 0);  //set for IRQ on RX done
-  setRx(0);                                                                //no actual RX timeout in this function
+//   setDioIrqParams(IRQ_RADIO_ALL, (IRQ_RX_DONE + IRQ_HEADER_VALID), 0, 0);  //set for IRQ on RX done
+//   setRx(0);                                                                //no actual RX timeout in this function
 
-  if (!wait)
-  {
-    return 0;                                                              //not wait requested so no packet length to pass
-  }
+//   if (!wait)
+//   {
+//     return 0;                                                              //not wait requested so no packet length to pass
+//   }
 
-  if (rxtimeout == 0)
-  {
-    while (!digitalRead(_RXDonePin));                                      //Wait for DIO0 to go high, no timeout, RX DONE
-  }
-  else
-  {
-    endtimeoutmS = millis() + rxtimeout;
-    while (!digitalRead(_RXDonePin) && (millis() < endtimeoutmS));
-  }
+//   if (rxtimeout == 0)
+//   {
+//     while (!digitalRead(_RXDonePin));                                      //Wait for DIO0 to go high, no timeout, RX DONE
+//   }
+//   else
+//   {
+//     endtimeoutmS = millis() + rxtimeout;
+//     while (!digitalRead(_RXDonePin) && (millis() < endtimeoutmS));
+//   }
 
-  setMode(MODE_STDBY_RC);                                                   //ensure to stop further packet reception
+//   setMode(MODE_STDBY_RC);                                                   //ensure to stop further packet reception
 
-  if (!digitalRead(_RXDonePin))                                             //check if DIO still low, is so must be RX timeout
-  {
-    _IRQmsb = IRQ_RX_TIMEOUT;
-    return 0;
-  }
+//   if (!digitalRead(_RXDonePin))                                             //check if DIO still low, is so must be RX timeout
+//   {
+//     _IRQmsb = IRQ_RX_TIMEOUT;
+//     return 0;
+//   }
 
-  if ( readIrqStatus() != (IRQ_RX_DONE + IRQ_HEADER_VALID) )
-  {
-    return 0;                                                                //no RX done and header valid only, could be CRC error
-  }
+//   if ( readIrqStatus() != (IRQ_RX_DONE + IRQ_HEADER_VALID) )
+//   {
+//     return 0;                                                                //no RX done and header valid only, could be CRC error
+//   }
 
-  _RXPacketL = readRegister(REG_RXNBBYTES);
+//   _RXPacketL = readRegister(REG_RXNBBYTES);
   
 
-  //if (_RXPacketL > size)                      //check passed buffer is big enough for packet
-  //{
-    //_RXPacketL = size;                        //truncate packet if not enough space in passed buffer
-  //}
+//   //if (_RXPacketL > size)                      //check passed buffer is big enough for packet
+//   //{
+//     //_RXPacketL = size;                        //truncate packet if not enough space in passed buffer
+//   //}
 
-#ifdef USE_SPI_TRANSACTION   //to use SPI_TRANSACTION enable define at beginning of CPP file 
-  SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
-#endif
+// #ifdef USE_SPI_TRANSACTION   //to use SPI_TRANSACTION enable define at beginning of CPP file 
+//   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
+// #endif
 
-  digitalWrite(_NSS, LOW);                    //start the burst read
+//   digitalWrite(_NSS, LOW);                    //start the burst read
   
-#if defined ARDUINO || defined USE_ARDUPI  
-  SPI.transfer(REG_FIFO);
+// #if defined ARDUINO || defined USE_ARDUPI  
+//   SPI.transfer(REG_FIFO);
   
-  _RXPacketType = SPI.transfer(0);
-  _RXDestination = SPI.transfer(0); 
-  _RXSource = SPI.transfer(0);
-#else
-  _RXPacketType = readRegister(REG_FIFO);
-  _RXDestination = readRegister(REG_FIFO);
-  _RXSource = readRegister(REG_FIFO);
-#endif  
+//   _RXPacketType = SPI.transfer(0);
+//   _RXDestination = SPI.transfer(0); 
+//   _RXSource = SPI.transfer(0);
+// #else
+//   _RXPacketType = readRegister(REG_FIFO);
+//   _RXDestination = readRegister(REG_FIFO);
+//   _RXSource = readRegister(REG_FIFO);
+// #endif  
   
-  libraryCRC = addCRC(_RXPacketType, libraryCRC);
-  libraryCRC = addCRC(_RXDestination, libraryCRC);
-  libraryCRC = addCRC(_RXSource, libraryCRC);
+//   libraryCRC = addCRC(_RXPacketType, libraryCRC);
+//   libraryCRC = addCRC(_RXDestination, libraryCRC);
+//   libraryCRC = addCRC(_RXSource, libraryCRC);
   
-  //extractsize = _RXPacketL - 3;
+//   //extractsize = _RXPacketL - 3;
   
-  for (index = 0; index < size; index++)
-  {
-#if defined ARDUINO || defined USE_ARDUPI  
-    regdata = SPI.transfer(0);
-#else
-    regdata = readRegister(REG_FIFO);
-#endif    
-    libraryCRC = addCRC(regdata, libraryCRC);
-    rxbuffer[index] = regdata;
-  }
-  digitalWrite(_NSS, HIGH);
+//   for (index = 0; index < size; index++)
+//   {
+// #if defined ARDUINO || defined USE_ARDUPI  
+//     regdata = SPI.transfer(0);
+// #else
+//     regdata = readRegister(REG_FIFO);
+// #endif    
+//     libraryCRC = addCRC(regdata, libraryCRC);
+//     rxbuffer[index] = regdata;
+//   }
+//   digitalWrite(_NSS, HIGH);
 
-#ifdef USE_SPI_TRANSACTION
-  SPI.endTransaction();
-#endif
+// #ifdef USE_SPI_TRANSACTION
+//   SPI.endTransaction();
+// #endif
 
 
-if (packettype > 0)
-     {
-     if (_RXPacketType != packettype)
-        {
-         return 0x1000;                       //set bit 16 to indicate not matching packet type
-        }
-     }
+// if (packettype > 0)
+//      {
+//      if (_RXPacketType != packettype)
+//         {
+//          return 0x1000;                       //set bit 16 to indicate not matching packet type
+//         }
+//      }
   
-  if (destination > 0)
-     {
-     if (_RXDestination != destination)
-        {
-         return 0x20000;                      //set bit 17 to indicate not matching destintion node
-        }
-     }
+//   if (destination > 0)
+//      {
+//      if (_RXDestination != destination)
+//         {
+//          return 0x20000;                      //set bit 17 to indicate not matching destintion node
+//         }
+//      }
  
-  if (source > 0)
-     {
-     if (_RXSource != source)
-        {
-         return 0x40000;                      //set bit 18 to indicate not matching source node  
-        }
-     }  
+//   if (source > 0)
+//      {
+//      if (_RXSource != source)
+//         {
+//          return 0x40000;                      //set bit 18 to indicate not matching source node  
+//         }
+//      }  
 
 
-#ifdef SX127XDEBUG1
-  PRINTLN;
-  PRINT_CSTSTR("RXcrc,"); 
-  PRINTLN_HEX("%X",libraryCRC);
-#endif
+// #ifdef SX127XDEBUG1
+//   PRINTLN;
+//   PRINT_CSTSTR("RXcrc,"); 
+//   PRINTLN_HEX("%X",libraryCRC);
+// #endif
 
-  return ( ( (uint32_t) libraryCRC << 16) + (uint8_t) _RXPacketL ); 
-}
+//   return ( ( (uint32_t) libraryCRC << 16) + (uint8_t) _RXPacketL ); 
+// }
 
 /**************************************************************************
   Added by C. Pham - Oct. 2020

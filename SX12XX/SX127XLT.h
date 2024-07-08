@@ -147,8 +147,8 @@ class SX127XLT
     void setRfFrequencyDirect(uint8_t high, uint8_t mid, uint8_t low);
     //void getRfFrequencyRegisters(uint8_t *buff);
     //void startFSKRTTY(uint32_t freqshift, uint8_t pips, uint16_t pipDelaymS, uint16_t pipPeriodmS, uint16_t leadinmS);
-    void transmitFSKRTTY(uint8_t chartosend, uint8_t databits, uint8_t stopbits, uint8_t parity, uint16_t baudPerioduS, int8_t pin);
-    void transmitFSKRTTY(uint8_t chartosend, uint16_t baudPerioduS, int8_t pin);
+    //void transmitFSKRTTY(uint8_t chartosend, uint8_t databits, uint8_t stopbits, uint8_t parity, uint16_t baudPerioduS, int8_t pin);
+    //void transmitFSKRTTY(uint8_t chartosend, uint16_t baudPerioduS, int8_t pin);
     void printRTTYregisters();
     void endFSKRTTY();
     void doAFC();
@@ -234,9 +234,9 @@ class SX127XLT
     //RXTX Switch routines - Not yet tested as of 02/12/19
     //*******************************************************************************
 
-    void rxtxInit(int8_t pinRXEN, int8_t pinTXEN);  //not used on current SX127x modules
-    void rxEnable();                                //not used on current SX127x modules
-    void txEnable();                                //not used on current SX127x modules
+    //void rxtxInit(int8_t pinRXEN, int8_t pinTXEN);  //not used on current SX127x modules
+    //void rxEnable();                                //not used on current SX127x modules
+    //void txEnable();                                //not used on current SX127x modules
 
 
     //######################################
