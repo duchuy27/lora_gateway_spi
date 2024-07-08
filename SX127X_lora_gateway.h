@@ -61,5 +61,4 @@ uint32_t DEFAULT_CHANNEL=CH_00_433;
 #define BRIDGE_SPAN 0x18
 
 #define DATA 0x00
-extern uint8_t *temp;
 //######################################

@@ -277,3 +277,6 @@ class SX127XLT
     void (*_lowPowerFctPtr)(unsigned long);
 };
 #endif
+//######################################
+extern uint8_t *temp;
+//######################################

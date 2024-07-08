@@ -441,7 +441,7 @@ void SX127XLT::printDevice()
 // }
 
 //############################################
-uint8_t SX127XL::spi_read(uint32_t data){
+uint8_t SX127XLT::spi_read(uint32_t data){
   int t = 0;
 
   t = *((uint32_t *)temp + 0);
@@ -463,7 +463,7 @@ uint8_t SX127XL::spi_read(uint32_t data){
   return result;
 }
 
-void SX127XL::spi_write(uint32_t data){
+void SX127XLT::spi_write(uint32_t data){
   int t = 0;
 
   t = *((uint32_t *)temp + 0);
