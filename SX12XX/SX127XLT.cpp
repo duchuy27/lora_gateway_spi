@@ -513,6 +513,7 @@ void SX127XLT::writeRegister(uint8_t address, uint8_t value)
 
 uint8_t SX127XLT::readRegister(uint8_t address)
 {
+  uint8_t regdata;
 	uint8_t spibuf[2];
 	spibuf[0] = address & 0x7F;
 	spibuf[1] = 0x00;
