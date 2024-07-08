@@ -76,145 +76,141 @@ SX127XLT::SX127XLT()
   _lowPowerFctPtr=NULL;    
 }
 
-/* Formats for :begin
-1 original   > begin(int8_t pinNSS, int8_t pinNRESET, int8_t pinDIO0, int8_t pinDIO1, int8_t pinDIO2, uint8_t device);
-2 Simplified > begin(int8_t pinNSS, int8_t pinNRESET, int8_t pinDIO0, uint8_t device);
-*/
 
-bool SX127XLT::begin(int8_t pinNSS, int8_t pinNRESET, int8_t pinDIO0, int8_t pinDIO1, int8_t pinDIO2, uint8_t device)
-{
-//format 1 pins, assign the all available pins 
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("1 begin()");
-#endif
+// bool SX127XLT::begin(int8_t pinNSS, int8_t pinNRESET, int8_t pinDIO0, int8_t pinDIO1, int8_t pinDIO2, uint8_t device)
+// {
+// //format 1 pins, assign the all available pins 
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("1 begin()");
+// #endif
 
-#if not defined ARDUINO && not defined USE_ARDUPI
-  //wiringPiSetup() ;
-  PRINTLN_CSTSTR("<<< using wiringPi >>>"); 
-#endif
+// #if not defined ARDUINO && not defined USE_ARDUPI
+//   //wiringPiSetup() ;
+//   PRINTLN_CSTSTR("<<< using wiringPi >>>"); 
+// #endif
 
-  //assign the passed pins to the class private variabled
-  _NSS = pinNSS;
-  _NRESET = pinNRESET;
-  _DIO0 = pinDIO0;
-  _DIO1 = pinDIO1;
-  _DIO2 = pinDIO2;
-  _Device = device;            //device type needs to be assigned before reset
-  _TXDonePin = pinDIO0;        //this is defalt pin for sensing TX done
-  _RXDonePin = pinDIO0;        //this is defalt pin for sensing RX done
+//   //assign the passed pins to the class private variabled
+//   _NSS = pinNSS;
+//   _NRESET = pinNRESET;
+//   _DIO0 = pinDIO0;
+//   _DIO1 = pinDIO1;
+//   _DIO2 = pinDIO2;
+//   _Device = device;            //device type needs to be assigned before reset
+//   _TXDonePin = pinDIO0;        //this is defalt pin for sensing TX done
+//   _RXDonePin = pinDIO0;        //this is defalt pin for sensing RX done
   
-  pinMode(_NSS, OUTPUT);
-  digitalWrite(_NSS, HIGH);
-  pinMode(_NRESET, OUTPUT);
-  digitalWrite(_NRESET, LOW);
+//   pinMode(_NSS, OUTPUT);
+//   digitalWrite(_NSS, HIGH);
+//   pinMode(_NRESET, OUTPUT);
+//   digitalWrite(_NRESET, LOW);
   
-  if (_DIO0 >= 0)
-  {
-    pinMode( _DIO0, INPUT);
-  }
+//   if (_DIO0 >= 0)
+//   {
+//     pinMode( _DIO0, INPUT);
+//   }
 
-  if (_DIO1 >= 0)
-  {
-    pinMode( _DIO1,  INPUT);
-  }
+//   if (_DIO1 >= 0)
+//   {
+//     pinMode( _DIO1,  INPUT);
+//   }
 
-  if (_DIO2 >= 0)
-  {
-    pinMode( _DIO2,  INPUT);
-  }
+//   if (_DIO2 >= 0)
+//   {
+//     pinMode( _DIO2,  INPUT);
+//   }
 
-  resetDevice();
+//   resetDevice();
      
-#ifdef SX127XDEBUGPINS
-  PRINTLN_CSTSTR("format 1 begin()");
-  PRINTLN_CSTSTR("SX127XLT constructor instantiated successfully");
-  PRINT_CSTSTR("NSS ");
-  PRINTLN_VALUE("%d",_NSS);
-  PRINT_CSTSTR("NRESET ");
-  PRINT_CSTSTR("DIO0 ");
-  PRINTLN_VALUE("%d",_DIO0);
-  PRINT_CSTSTR("DIO1 ");
-  PRINTLN_VALUE("%d",_DIO1);
-  PRINT_CSTSTR("DIO2 ");
-  PRINTLN_VALUE("%d",_DIO2);
-#endif
+// #ifdef SX127XDEBUGPINS
+//   PRINTLN_CSTSTR("format 1 begin()");
+//   PRINTLN_CSTSTR("SX127XLT constructor instantiated successfully");
+//   PRINT_CSTSTR("NSS ");
+//   PRINTLN_VALUE("%d",_NSS);
+//   PRINT_CSTSTR("NRESET ");
+//   PRINT_CSTSTR("DIO0 ");
+//   PRINTLN_VALUE("%d",_DIO0);
+//   PRINT_CSTSTR("DIO1 ");
+//   PRINTLN_VALUE("%d",_DIO1);
+//   PRINT_CSTSTR("DIO2 ");
+//   PRINTLN_VALUE("%d",_DIO2);
+// #endif
 
-  if (checkDevice())
-  {
-    return true;
-  }
+//   if (checkDevice())
+//   {
+//     return true;
+//   }
 
-  return false;
-}
+//   return false;
+// }
 
 
 
-bool SX127XLT::begin(int8_t pinNSS, int8_t pinNRESET, int8_t pinDIO0, uint8_t device)
-{
-//format 2 pins, simplified 
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("2 begin()");
-#endif
+// bool SX127XLT::begin(int8_t pinNSS, int8_t pinNRESET, int8_t pinDIO0, uint8_t device)
+// {
+// //format 2 pins, simplified 
+// #ifdef SX127XDEBUG1
+//   PRINTLN_CSTSTR("2 begin()");
+// #endif
 
-#if not defined ARDUINO && not defined USE_ARDUPI
- // wiringPiSetup() ;
-  PRINTLN_CSTSTR("<<< using wiringPi >>>");   
-#endif
+// #if not defined ARDUINO && not defined USE_ARDUPI
+//  // wiringPiSetup() ;
+//   PRINTLN_CSTSTR("<<< using wiringPi >>>");   
+// #endif
 
-  //assign the passed pins to the class private variabled
-  _NSS = pinNSS;
-  _NRESET = pinNRESET;
-  _DIO0 = pinDIO0;
-  _DIO1 = -1;                  //pin not used
-  _DIO2 = -1;                  //pin not used 
-  _Device = device;            //device type needs to be assigned before reset
-  _TXDonePin = pinDIO0;        //this is defalt pin for sensing TX done
-  _RXDonePin = pinDIO0;        //this is defalt pin for sensing RX done
+//   //assign the passed pins to the class private variabled
+//   _NSS = pinNSS;
+//   _NRESET = pinNRESET;
+//   _DIO0 = pinDIO0;
+//   _DIO1 = -1;                  //pin not used
+//   _DIO2 = -1;                  //pin not used 
+//   _Device = device;            //device type needs to be assigned before reset
+//   _TXDonePin = pinDIO0;        //this is defalt pin for sensing TX done
+//   _RXDonePin = pinDIO0;        //this is defalt pin for sensing RX done
   
-  pinMode(_NSS, OUTPUT);
-  digitalWrite(_NSS, HIGH);
-  pinMode(_NRESET, OUTPUT);
-  digitalWrite(_NRESET, LOW);
+//   pinMode(_NSS, OUTPUT);
+//   digitalWrite(_NSS, HIGH);
+//   pinMode(_NRESET, OUTPUT);
+//   digitalWrite(_NRESET, LOW);
  
-  if (_DIO0 >= 0)
-  {
-    pinMode( _DIO0, INPUT);
-  }
+//   if (_DIO0 >= 0)
+//   {
+//     pinMode( _DIO0, INPUT);
+//   }
 
-  if (_DIO1 >= 0)
-  {
-    pinMode( _DIO1,  INPUT);
-  }
+//   if (_DIO1 >= 0)
+//   {
+//     pinMode( _DIO1,  INPUT);
+//   }
 
-  if (_DIO2 >= 0)
-  {
-    pinMode( _DIO2,  INPUT);
-  }
+//   if (_DIO2 >= 0)
+//   {
+//     pinMode( _DIO2,  INPUT);
+//   }
 
-  resetDevice();
+//   resetDevice();
   
   
-  #ifdef SX127XDEBUGPINS
-  PRINTLN_CSTSTR("format 2 begin()");
-  PRINTLN_CSTSTR("SX127XLT constructor instantiated successfully");
-  PRINT_CSTSTR("NSS ");
-  PRINTLN_VALUE("%d",_NSS);
-  PRINT_CSTSTR("NRESET ");
-  PRINT_CSTSTR("DIO0 ");
-  PRINTLN_VALUE("%d",_DIO0);
-  PRINT_CSTSTR("DIO1 ");
-  PRINTLN_VALUE("%d",_DIO1);
-  PRINT_CSTSTR("DIO2 ");
-  PRINTLN_VALUE("%d",_DIO2);
-  #endif
+//   #ifdef SX127XDEBUGPINS
+//   PRINTLN_CSTSTR("format 2 begin()");
+//   PRINTLN_CSTSTR("SX127XLT constructor instantiated successfully");
+//   PRINT_CSTSTR("NSS ");
+//   PRINTLN_VALUE("%d",_NSS);
+//   PRINT_CSTSTR("NRESET ");
+//   PRINT_CSTSTR("DIO0 ");
+//   PRINTLN_VALUE("%d",_DIO0);
+//   PRINT_CSTSTR("DIO1 ");
+//   PRINTLN_VALUE("%d",_DIO1);
+//   PRINT_CSTSTR("DIO2 ");
+//   PRINTLN_VALUE("%d",_DIO2);
+//   #endif
 
-  if (checkDevice())
-  {
-    return true;
-  }
+//   if (checkDevice())
+//   {
+//     return true;
+//   }
 
-  return false;
-}
+//   return false;
+// }
 
 
 void SX127XLT::resetDevice()

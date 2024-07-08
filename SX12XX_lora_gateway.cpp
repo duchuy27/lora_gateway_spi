@@ -358,11 +358,11 @@ void setup()
   SPI.begin();
 
   //setup hardware pins used by device, then check if device is found
-  if (LT.begin(NSS, NRESET, DIO0, DIO1, DIO2, LORA_DEVICE)) PRINTLN_CSTSTR("^$**********Power ON");
-  else{
-    PRINTLN_CSTSTR("^$No device responding");
-    while (1){}
-  }
+//   if (LT.begin(NSS, NRESET, DIO0, DIO1, DIO2, LORA_DEVICE)) PRINTLN_CSTSTR("^$**********Power ON");
+//   else{
+//     PRINTLN_CSTSTR("^$No device responding");
+//     while (1){}
+//   }
 
   loraConfig(); 
 
