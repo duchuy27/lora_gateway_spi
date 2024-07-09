@@ -37,8 +37,6 @@
 #define bitRead(value, bit) (((value) >> (bit)) & 0x01)  // read a bit
 #define bitSet(value, bit) ((value) |= (1UL << (bit)))    // set bit to '1'
 #define bitClear(value, bit) ((value) &= ~(1UL << (bit))) // set bit to '0'
-#define lowByte(value) ((value) & 0x00FF)
-#define highByte(value) (((value) >> 8) & 0x00FF)
 
 #ifdef ARDUINO
 #define USE_SPI_TRANSACTION          //this is the standard behaviour of library, use SPI Transaction switching

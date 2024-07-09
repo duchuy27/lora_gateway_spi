@@ -494,9 +494,9 @@ char * SerialPi::int2oct(int i){
  * Public methods *
  ******************/
 
-// SPIPi::SPIPi(){
+SPIPi::SPIPi(){
 
-// }
+}
 
 // void SPIPi::begin(){
 // 	// Init SPI

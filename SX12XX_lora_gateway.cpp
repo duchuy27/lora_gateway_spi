@@ -103,8 +103,6 @@ const uint16_t MAX_TIMEOUT = 10000;
 uint16_t rcv_timeout=MAX_TIMEOUT;
 int status_counter=0;
 uint8_t SIFS_cad_number;
-// set to 0 to disable carrier sense based on CAD
-uint8_t cad_number=3;
 
 uint16_t optBW=0; 
 uint8_t optSF=0;
@@ -357,7 +355,8 @@ void setup()
 //   SPI.begin();
 
   //setup hardware pins used by device, then check if device is found
-//   if (LT.begin(NSS, NRESET, DIO0, DIO1, DIO2, LORA_DEVICE)) PRINTLN_CSTSTR("^$**********Power ON");
+//   if (LT.begin(NSS, NRESET, DIO0, DIO1, DIO2, LORA_DEVICE)) 
+	PRINTLN_CSTSTR("^$**********Power ON");
 //   else{
 //     PRINTLN_CSTSTR("^$No device responding");
 //     while (1){}
