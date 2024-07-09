@@ -186,10 +186,10 @@ public:
 class SPIPi{
 	public:
 	SPIPi();
-  	void begin();
-    void end();
-	uint8_t transfer(uint8_t value);
-	void transfernb(char* tbuf, char* rbuf, uint32_t len);
+  	// void begin();
+    // void end();
+	// uint8_t transfer(uint8_t value);
+	// void transfernb(char* tbuf, char* rbuf, uint32_t len);
 };
 
 void delay(long millis);
