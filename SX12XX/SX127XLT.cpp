@@ -55,9 +55,6 @@
 
 #define LTUNUSED(v) (void) (v)       //add LTUNUSED(variable); in functions to avoid compiler warnings
 
-//#define SX127XDEBUG1               //enable level 1 debug messages
-//#define SX127XDEBUG2               //enable level 2 debug messages
-//#define SX127XDEBUG3               //enable level 3 debug messages
 #define SX127XDEBUG_TEST           //enable test debug messages
 #define SX127XDEBUGACK               //enable ack transaction debug messages
 #define SX127XDEBUGRTS
@@ -78,10 +75,6 @@ SX127XLT::SX127XLT()
 
 void SX127XLT::setMode(uint8_t modeconfig)
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("setMode()");
-#endif
-
   uint8_t regdata;
 
   regdata = modeconfig + _PACKET_TYPE;
@@ -91,10 +84,6 @@ void SX127XLT::setMode(uint8_t modeconfig)
 
 void SX127XLT::calibrateImage(uint8_t null)
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("calibrateImage()");
-#endif
-
   LTUNUSED(null);
 
   uint8_t regdata, savedmode;
@@ -110,10 +99,6 @@ void SX127XLT::calibrateImage(uint8_t null)
 
 void SX127XLT::printDevice()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("printDevice()");
-#endif
-
   switch (_Device)
   {
     case DEVICE_SX1278:
@@ -121,7 +106,6 @@ void SX127XLT::printDevice()
       break;
     default:
       PRINT_CSTSTR("Unknown Device");
-
   }
 }
 
@@ -172,10 +156,6 @@ void SX127XLT::spi_write(uint32_t data){
 
 void SX127XLT::writeRegister(uint8_t address, uint8_t value)
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("writeRegister()");
-#endif
-
   uint8_t spibuf[2];
   spibuf[0] = address | 0x80;
   spibuf[1] = value;
@@ -183,16 +163,6 @@ void SX127XLT::writeRegister(uint8_t address, uint8_t value)
   uint32_t data;
   data = spibuf[0] | (spibuf[1] << 8);
   spi_write(data);
-
-
-#ifdef SX127XDEBUG2
-  PRINT_CSTSTR("Write register ");
-  printHEXByte0x(address);
-  PRINT_CSTSTR(" ");
-  printHEXByte0x(value);
-  PRINTLN;
-  FLUSHOUTPUT;
-#endif
 }
 
 
@@ -213,10 +183,6 @@ uint8_t SX127XLT::readRegister(uint8_t address)
 
 void SX127XLT::printOperatingMode()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("printOperatingMode()");
-#endif
-
   uint8_t regdata;
 
   regdata = getOpmode();
@@ -264,10 +230,6 @@ void SX127XLT::printOperatingMode()
 
 void SX127XLT::printOperatingSettings()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("printOperatingSettings()");
-#endif
-
   printDevice();
   PRINT_CSTSTR(",");
 
@@ -344,10 +306,6 @@ void SX127XLT::printOperatingSettings()
 
 void SX127XLT::setTxParams(int8_t txPower, uint8_t rampTime)
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("setTxParams()");
-#endif
-
 	if (txPower < 0)
 		return;
 
@@ -425,11 +383,6 @@ void SX127XLT::setTxParams(int8_t txPower, uint8_t rampTime)
 void SX127XLT::setPacketParams(uint16_t packetParam1, uint8_t  packetParam2, uint8_t packetParam3, uint8_t packetParam4, uint8_t packetParam5)
 {
   //format is PreambleLength, Fixed\Variable length packets, Packetlength, CRC mode, IQ mode
-
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("SetPacketParams()");
-#endif
-
   uint8_t preambleMSB, preambleLSB, regdata;
 
   //*******************************************************
@@ -479,11 +432,6 @@ void SX127XLT::setPacketParams(uint16_t packetParam1, uint8_t  packetParam2, uin
 void SX127XLT::setModulationParams(uint8_t modParam1, uint8_t modParam2, uint8_t  modParam3, uint8_t  modParam4)
 {
   //order is SpreadingFactor, Bandwidth, CodeRate, Optimisation
-
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("setModulationParams()");
-#endif
-
   uint8_t regdata, bw;
 
   //Spreading factor - same for SX1272 and SX127X - reg 0x1D
@@ -569,10 +517,6 @@ void SX127XLT::setModulationParams(uint8_t modParam1, uint8_t modParam2, uint8_t
 
 void SX127XLT::setRfFrequency(uint64_t freq64, int32_t offset)
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("setRfFrequency()");
-#endif
-
   savedFrequency = freq64;
   savedOffset = offset;
   
@@ -591,10 +535,6 @@ void SX127XLT::setRfFrequency(uint64_t freq64, int32_t offset)
 uint32_t SX127XLT::getFreqInt()
 {
   //get the current set LoRa device frequency, return as long integer
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("getFreqInt()");
-#endif
-
   uint8_t Msb, Mid, Lsb;
   uint32_t uinttemp;
   float floattemp;
@@ -607,117 +547,9 @@ uint32_t SX127XLT::getFreqInt()
   return uinttemp;
 }
 
-int32_t SX127XLT::getFrequencyErrorHz()
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("getFrequencyErrorHz()");
-#endif
-
-  uint16_t msb, mid, lsb;
-  int16_t freqerr;
-  uint8_t bw;
-  float bwconst;
-
-  msb = readRegister(REG_FEIMSB);
-  mid = readRegister(REG_FEIMID);
-  lsb = readRegister(REG_FEILSB);
-
-  if (_Device != DEVICE_SX1272)
-  {
-    //for all devices apart from SX1272
-    bw = (readRegister(REG_MODEMCONFIG1)) & (0xF0);
-
-    switch (bw)
-    {
-      case LORA_BW_125:           //ordered with most commonly used first
-        bwconst = 2.097;
-        break;
-
-      case LORA_BW_062:
-        bwconst = 1.049;
-        break;
-
-      case LORA_BW_041:
-        bwconst = 0.6996;
-        break;
-
-      case LORA_BW_007:
-        bwconst = 0.1309;
-        break;
-
-      case LORA_BW_010:
-        bwconst = 0.1745;
-        break;
-
-      case LORA_BW_015:
-        bwconst = 0.2617;
-        break;
-
-      case LORA_BW_020:
-        bwconst = 0.3490;
-        break;
-
-      case LORA_BW_031:
-        bwconst = 0.5234;
-        break;
-
-      case LORA_BW_250:
-        bwconst = 4.194;
-        break;
-
-      case LORA_BW_500:
-        bwconst = 8.389;
-        break;
-
-      default:
-        bwconst = 0x00;
-    }
-  }
-  else
-  {
-    //for the SX1272
-    bw = (readRegister(REG_MODEMCONFIG1)) & (0xF0);
-
-    switch (bw)
-    {
-      case 0:                   //this is LORA_BW_125
-        bwconst = 2.097;
-        break;
-
-      case 64:                  //this is LORA_BW_250
-        bwconst = 4.194;
-        break;
-
-      case 128:                 //this is LORA_BW_250
-        bwconst = 8.389;
-        break;
-
-      default:
-        bwconst = 0x00;
-    }
-
-
-  }
-
-  freqerr = msb << 12;          //shift lower 4 bits of msb into high 4 bits of freqerr
-  mid = (mid << 8) + lsb;
-  mid = (mid >> 4);
-  freqerr = freqerr + mid;
-
-  freqerr = (int16_t) (freqerr * bwconst);
-
-  return freqerr;
-}
-
-
 void SX127XLT::setTx(uint32_t timeout)
 {
   //There is no TX timeout function for SX127X, the value passed is ignored
-
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("setTx()");
-#endif
-
   LTUNUSED(timeout);                                  //unused TX timeout passed for compatibility with SX126x, SX128x
 
   clearIrqStatus(IRQ_RADIO_ALL);
@@ -729,10 +561,6 @@ void SX127XLT::setTx(uint32_t timeout)
 void SX127XLT::setRx(uint32_t timeout)
 {
   //no timeout in this routine, left in for compatibility
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("setRx()");
-#endif
-
   LTUNUSED(timeout);
 
   clearIrqStatus(IRQ_RADIO_ALL);
@@ -743,11 +571,6 @@ void SX127XLT::setRx(uint32_t timeout)
 void SX127XLT::setHighSensitivity()
 {
   //set Boosted LNA for HF mode
-
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("setHighSensitivity()");
-#endif
-
   if (_Device != DEVICE_SX1272)
   {
     //for all devices apart from SX1272
@@ -763,10 +586,6 @@ void SX127XLT::setHighSensitivity()
 
 uint8_t SX127XLT::getAGC()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("getAGC()");
-#endif
-
   uint8_t regdata;
 
   if (_Device != DEVICE_SX1272)
@@ -786,10 +605,6 @@ uint8_t SX127XLT::getAGC()
 
 uint8_t SX127XLT::getLNAgain()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("getLNAgain()");
-#endif
-
   uint8_t regdata;
   regdata = readRegister(REG_LNA);
   regdata = (regdata & READ_LNAGAIN_AND_X);
@@ -799,10 +614,6 @@ uint8_t SX127XLT::getLNAgain()
 
 uint8_t SX127XLT::getCRCMode()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("getCRCMode()");
-#endif
-
   uint8_t regdata;
 
   regdata = readRegister(REG_MODEMCONFIG2);
@@ -824,10 +635,6 @@ uint8_t SX127XLT::getCRCMode()
 
 uint8_t SX127XLT::getHeaderMode()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("getHeaderMode()");
-#endif
-
   uint8_t regdata;
 
   regdata = readRegister(REG_MODEMCONFIG1);
@@ -847,10 +654,6 @@ uint8_t SX127XLT::getHeaderMode()
 
 uint8_t SX127XLT::getLNAboostLF()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("getLNAboostLF");
-#endif
-
   uint8_t regdata;
 
   regdata = readRegister(REG_LNA);
@@ -870,10 +673,6 @@ uint8_t SX127XLT::getLNAboostLF()
 
 uint8_t SX127XLT::getLNAboostHF()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("getLNAboostHF()");
-#endif
-
   uint8_t regdata;
 
   regdata = readRegister(REG_LNA);
@@ -893,10 +692,6 @@ uint8_t SX127XLT::getLNAboostHF()
 
 uint8_t SX127XLT::getOpmode()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("getOpmode()");
-#endif
-
   uint8_t regdata;
 
   regdata = (readRegister(REG_OPMODE) & READ_OPMODE_AND_X);
@@ -908,11 +703,6 @@ uint8_t SX127XLT::getOpmode()
 uint8_t SX127XLT::getPacketMode()
 {
   //its either LoRa or FSK
-
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("getPacketMode()");
-#endif
-
   uint8_t regdata;
 
   regdata = (readRegister(REG_OPMODE) & READ_RANGEMODE_AND_X);
@@ -923,20 +713,12 @@ uint8_t SX127XLT::getPacketMode()
 
 uint8_t SX127XLT::readRXPacketL()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("readRXPacketL()");
-#endif
-
   _RXPacketL = readRegister(REG_RXNBBYTES);
   return _RXPacketL;
 }
 
 int8_t SX127XLT::readPacketRSSI()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("readPacketRSSI()");
-#endif
-
   _PacketRSSI = readRegister(REG_PKTRSSIVALUE);
   
   readPacketSNR();
@@ -957,12 +739,7 @@ int8_t SX127XLT::readPacketRSSI()
 }
 
 int8_t SX127XLT::readPacketSNR()
-
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("readPacketSNR()");
-#endif
-
   uint8_t regdata;
   regdata = readRegister(REG_PKTSNRVALUE);
 
@@ -981,39 +758,24 @@ int8_t SX127XLT::readPacketSNR()
 
 uint8_t SX127XLT::readRXPacketType()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("readRXPacketType()");
-#endif
-
   return _RXPacketType;
 }
 
 
 uint8_t SX127XLT::readRXDestination()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("readRXDestination()");
-#endif
   return _RXDestination;
 }
 
 
 uint8_t SX127XLT::readRXSource()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("readRXSource()");
-#endif
-
   return _RXSource;
 }
 
 
 void SX127XLT::setBufferBaseAddress(uint8_t txBaseAddress, uint8_t rxBaseAddress)
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("setBufferBaseAddress()");
-#endif
-
   writeRegister(REG_FIFOTXBASEADDR, txBaseAddress);
   writeRegister(REG_FIFORXBASEADDR, rxBaseAddress);
 }
@@ -1021,9 +783,6 @@ void SX127XLT::setBufferBaseAddress(uint8_t txBaseAddress, uint8_t rxBaseAddress
 
 void SX127XLT::setPacketType(uint8_t packettype )
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("setPacketType()");
-#endif
   uint8_t regdata;
 
   regdata = (readRegister(REG_OPMODE) & 0x7F);           //save all register bits bar the LoRa\FSK bit 7
@@ -1040,16 +799,11 @@ void SX127XLT::setPacketType(uint8_t packettype )
     writeRegister(REG_OPMODE, 0x00);                     //REG_OPMODE, need to set to sleep mode before configure for FSK
     writeRegister(REG_OPMODE, regdata);                  //back to original standby mode with LoRa set
   }
-
 }
 
 
 void SX127XLT::clearIrqStatus(uint16_t irqMask)
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("clearIrqStatus()");
-#endif
-
   uint8_t masklsb;
   uint16_t maskmsb;
   _IRQmsb = _IRQmsb & 0xFF00;                                 //make sure _IRQmsb does not have LSB bits set.
@@ -1062,10 +816,6 @@ void SX127XLT::clearIrqStatus(uint16_t irqMask)
 
 uint16_t SX127XLT::readIrqStatus()
 {
-#ifdef SX127XDEBUG1
-  PRINT_CSTSTR("readIrqStatus()");
-#endif
-
   bool packetHasCRC;
 
   packetHasCRC = (readRegister(REG_HOPCHANNEL) & 0x40);        //read the packet has CRC bit in RegHopChannel
@@ -1090,15 +840,9 @@ uint16_t SX127XLT::readIrqStatus()
 void SX127XLT::setDioIrqParams(uint16_t irqMask, uint16_t dio0Mask, uint16_t dio1Mask, uint16_t dio2Mask)
 {
   //note the irqmask contains the bit values of the interrupts that are allowed, so for all interrupts value is 0xFFFF
-
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("setDioIrqParams()");
-#endif
-
   uint8_t mask0, mask1, mask2;
 
   LTUNUSED(dio2Mask);                      //variable left in call for compatibility with other libraries
-
 
   switch (dio0Mask)
   {
@@ -1145,10 +889,6 @@ void SX127XLT::setDioIrqParams(uint16_t irqMask, uint16_t dio0Mask, uint16_t dio
 
 void SX127XLT::printIrqStatus()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("printIrqStatus()");
-#endif
-
   uint8_t _IrqStatus;
   _IrqStatus = readIrqStatus();
 
@@ -1217,29 +957,8 @@ void SX127XLT::printIrqStatus()
 
 }
 
-void SX127XLT::printHEXByte0x(uint8_t temp)
-{
-  //print a byte, adding 0x
-
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("printHEXByte0x()");
-#endif
-
-  PRINT_CSTSTR("0x");
-  if (temp < 0x10)
-  {
-    PRINT_CSTSTR("0");
-  }
-  PRINT_HEX("%X",temp);
-}
-
-
 uint8_t SX127XLT::receive(uint8_t *rxbuffer, uint8_t size, uint32_t rxtimeout, uint8_t wait )
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("receive()");
-#endif
-
   uint16_t index;
   uint32_t endtimeoutmS;
   uint8_t regdata;
@@ -1285,10 +1004,6 @@ uint8_t SX127XLT::receive(uint8_t *rxbuffer, uint8_t size, uint32_t rxtimeout, u
   {
     endtimeoutmS = (millis() + rxtimeout);
 #ifdef USE_POLLING
-
-#ifdef SX127XDEBUG1
-  	PRINTLN_CSTSTR("RXDone using polling");
-#endif 
     index = readRegister(REG_IRQFLAGS);
 
     //poll the irq register for ValidHeader, bit 4
@@ -1301,9 +1016,6 @@ uint8_t SX127XLT::receive(uint8_t *rxbuffer, uint8_t size, uint32_t rxtimeout, u
 		if (bitRead(index, 4)!=0) {
     	//_RXTimestamp start when a valid header has been received
     	_RXTimestamp=millis();		
-#ifdef SX127XDEBUG1		
-  		PRINTLN_CSTSTR("Valid header detected");		
-#endif
 
 			//update endtimeoutmS to avoid timeout at the middle of a packet reception
 			endtimeoutmS = (_RXTimestamp + 10000);
@@ -1319,11 +1031,6 @@ uint8_t SX127XLT::receive(uint8_t *rxbuffer, uint8_t size, uint32_t rxtimeout, u
 
   //_RXDoneTimestamp start when the packet been fully received  
   _RXDoneTimestamp=millis();
-
-#ifdef SX127XDEBUG1
-  PRINTLN_VALUE("%ld", _RXTimestamp);
-	PRINTLN_VALUE("%ld", _RXDoneTimestamp);  		
-#endif
     
   setMode(MODE_STDBY_RC);                                            //ensure to stop further packet reception
 
@@ -1331,10 +1038,7 @@ uint8_t SX127XLT::receive(uint8_t *rxbuffer, uint8_t size, uint32_t rxtimeout, u
   if (bitRead(index, 6) == 0)                                        
 #endif  
   {
-    _IRQmsb = IRQ_RX_TIMEOUT;
-#ifdef SX127XDEBUG1    
-    PRINTLN_CSTSTR("RX timeout");
-#endif     
+    _IRQmsb = IRQ_RX_TIMEOUT;   
     return 0;
   }
 
@@ -1383,10 +1087,6 @@ uint8_t SX127XLT::receive(uint8_t *rxbuffer, uint8_t size, uint32_t rxtimeout, u
 
 uint8_t SX127XLT::receiveAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t rxtimeout, uint8_t wait)
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("receiveAddressed()");
-#endif
-
   uint16_t index;
   uint32_t endtimeoutmS;
   uint8_t regdata;
@@ -1432,10 +1132,6 @@ uint8_t SX127XLT::receiveAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t rxt
   {
     endtimeoutmS = (millis() + rxtimeout);
 #ifdef USE_POLLING
-
-#ifdef SX127XDEBUG1
-  	PRINTLN_CSTSTR("RXDone using polling");
-#endif 
     index = readRegister(REG_IRQFLAGS);
 		
     //poll the irq register for ValidHeader, bit 4
@@ -1448,9 +1144,6 @@ uint8_t SX127XLT::receiveAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t rxt
 		if (bitRead(index, 4)!=0) {
     	//_RXTimestamp start when a valid header has been received
     	_RXTimestamp=millis();		
-#ifdef SX127XDEBUG1
-  		PRINTLN_CSTSTR("Valid header detected"); 		
-#endif
 
 			//update endtimeoutmS to avoid timeout at the middle of a packet reception
 			endtimeoutmS = (_RXTimestamp + 10000);
@@ -1467,21 +1160,13 @@ uint8_t SX127XLT::receiveAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t rxt
   //_RXDoneTimestamp start when the packet been fully received  
   _RXDoneTimestamp=millis();
 
-#ifdef SX127XDEBUG1
-  PRINTLN_VALUE("%ld", _RXTimestamp);
-	PRINTLN_VALUE("%ld", _RXDoneTimestamp);  		
-#endif
-  
   setMode(MODE_STDBY_RC);                                            //ensure to stop further packet reception
 
 #ifdef USE_POLLING
   if (bitRead(index, 6) == 0)
 #endif  
   {
-    _IRQmsb = IRQ_RX_TIMEOUT;
-#ifdef SX127XDEBUG1    
-    PRINTLN_CSTSTR("RX timeout");
-#endif    
+    _IRQmsb = IRQ_RX_TIMEOUT;  
     return 0;
   }
 
@@ -1491,12 +1176,6 @@ uint8_t SX127XLT::receiveAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t rxt
   }
 
   _RXPacketL = readRegister(REG_RXNBBYTES);
-  
-#ifdef SX127XDEBUG1
-  PRINT_CSTSTR("Receive ");
-  PRINT_VALUE("%d", _RXPacketL);
-  PRINTLN_CSTSTR(" bytes");     		
-#endif  
 
 #ifdef USE_SPI_TRANSACTION   //to use SPI_TRANSACTION enable define at beginning of CPP file 
   SPI.beginTransaction(SPISettings(LTspeedMaximum, LTdataOrder, LTdataMode));
@@ -1518,17 +1197,6 @@ uint8_t SX127XLT::receiveAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t rxt
   _RXSource = readRegister(REG_FIFO);
   _RXSeqNo = readRegister(REG_FIFO);
 #endif  
-
-#ifdef SX127XDEBUG1
-	PRINT_CSTSTR("dest: ");
-	PRINTLN_VALUE("%d", _RXDestination);
-	PRINT_CSTSTR("ptype: ");
-	PRINTLN_VALUE("%d", _RXPacketType);		
-	PRINT_CSTSTR("src: ");
-	PRINTLN_VALUE("%d", _RXSource);
-	PRINT_CSTSTR("seq: ");
-	PRINTLN_VALUE("%d", _RXSeqNo);				 
-#endif	
   
   //the header is not passed to the user
   _RXPacketL=_RXPacketL-HEADER_SIZE;
@@ -1600,10 +1268,6 @@ uint8_t SX127XLT::receiveAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t rxt
 
 uint8_t SX127XLT::transmit(uint8_t *txbuffer, uint8_t size, uint32_t txtimeout, int8_t txpower, uint8_t wait)
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("transmit()");
-#endif
-
   uint8_t index, ptr;
   uint8_t bufferdata;
   uint32_t endtimeoutmS;
@@ -1673,10 +1337,6 @@ uint8_t SX127XLT::transmit(uint8_t *txbuffer, uint8_t size, uint32_t txtimeout, 
   {
     endtimeoutmS = (millis() + txtimeout);
 #ifdef USE_POLLING
-
-#ifdef SX127XDEBUG1
-  	PRINTLN_CSTSTR("TXDone using polling");
-#endif  
     index = readRegister(REG_IRQFLAGS);
     //poll the irq register for TXDone, bit 3
     while ((bitRead(index, 3) == 0) && (millis() < endtimeoutmS))
@@ -1702,10 +1362,6 @@ uint8_t SX127XLT::transmit(uint8_t *txbuffer, uint8_t size, uint32_t txtimeout, 
 
 uint8_t SX127XLT::transmitAddressed(uint8_t *txbuffer, uint8_t size, char txpackettype, char txdestination, char txsource, uint32_t txtimeout, int8_t txpower, uint8_t wait )
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("transmitAddressed()");
-#endif
-
   uint8_t index, ptr;
   uint8_t bufferdata;
   uint32_t endtimeoutmS;
@@ -1787,10 +1443,6 @@ uint8_t SX127XLT::transmitAddressed(uint8_t *txbuffer, uint8_t size, char txpack
   {
     endtimeoutmS = (millis() + txtimeout);
 #ifdef USE_POLLING
-
-#ifdef SX127XDEBUG1
-  	PRINTLN_CSTSTR("TXDone using polling");
-#endif 
     index = readRegister(REG_IRQFLAGS);
     //poll the irq register for TXDone, bit 3
     while ((bitRead(index, 3) == 0) && (millis() < endtimeoutmS))
@@ -1888,10 +1540,6 @@ uint8_t SX127XLT::transmitAddressed(uint8_t *txbuffer, uint8_t size, char txpack
 
 uint8_t SX127XLT::getLoRaSF()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("getLoRaSF()");
-#endif
-
   uint8_t regdata;
   regdata = readRegister(REG_MODEMCONFIG2);
   regdata = ((regdata & READ_SF_AND_X) >> 4);       //SX1272 and SX1276 store SF in same place
@@ -1902,10 +1550,6 @@ uint8_t SX127XLT::getLoRaSF()
 
 uint8_t SX127XLT::getLoRaCodingRate()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("getLoRaCodingRate");
-#endif
-
   uint8_t regdata;
   regdata = readRegister(REG_MODEMCONFIG1);
 
@@ -1925,10 +1569,6 @@ uint8_t SX127XLT::getLoRaCodingRate()
 
 uint8_t SX127XLT::getOptimisation()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("getOptimisation");
-#endif
-
   uint8_t regdata;
 
   if (_Device != DEVICE_SX1272)
@@ -1949,10 +1589,6 @@ uint8_t SX127XLT::getOptimisation()
 
 uint8_t SX127XLT::getSyncWord()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("getSyncWord");
-#endif
-
   return readRegister(REG_SYNCWORD);
 }
 
@@ -1960,11 +1596,6 @@ uint8_t SX127XLT::getSyncWord()
 uint8_t SX127XLT::getInvertIQ()
 {
   //IQ mode reg 0x33
-
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("getInvertIQ");
-#endif
-
   uint8_t regdata;
   regdata =  ( (readRegister(REG_INVERTIQ)) & 0x40 );
   return regdata;
@@ -1974,21 +1605,12 @@ uint8_t SX127XLT::getInvertIQ()
 uint8_t SX127XLT::getVersion()
 {
   //IQ mode reg 0x33
-
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("getVersion");
-#endif
-
   return readRegister(REG_VERSION);
 }
 
 
 uint16_t SX127XLT::getPreamble()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("getPreamble");
-#endif
-
   uint16_t regdata;
   regdata =  ( (readRegister(REG_PREAMBLEMSB) << 8) + readRegister(REG_PREAMBLELSB) );
   return regdata;
@@ -1997,12 +1619,7 @@ uint16_t SX127XLT::getPreamble()
 
 uint32_t SX127XLT::returnBandwidth(byte BWregvalue)
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("returnBandwidth()");
-#endif
-
   //uint8_t regdata;
-
   if (_Device == DEVICE_SX1272)
   {
     switch (BWregvalue)
@@ -2067,33 +1684,17 @@ uint8_t SX127XLT::returnOptimisation(uint8_t Bandwidth, uint8_t SpreadingFactor)
   //from the passed bandwidth (bandwidth) and spreading factor this routine
   //calculates whether low data rate optimisation should be on or off
 
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("returnOptimisation()");
-#endif
-
   uint32_t tempBandwidth;
   float symbolTime;
   tempBandwidth = returnBandwidth(Bandwidth);
   symbolTime = calcSymbolTime(tempBandwidth, SpreadingFactor);
 
-#ifdef SX127XDEBUG1
-  PRINT_CSTSTR("Symbol Time ");
-  PRINT_VALUE("%.3f",symbolTime);
-  PRINTLN_CSTSTR("mS");
-#endif
-
   if (symbolTime > 16)
   {
-#ifdef SX127XDEBUG1
-    PRINTLN_CSTSTR("LDR Opt on");
-#endif
     return LDRO_ON;
   }
   else
   {
-#ifdef SX127XDEBUG1
-    PRINTLN_CSTSTR("LDR Opt off");
-#endif
     return LDRO_OFF;
   }
 }
@@ -2102,11 +1703,6 @@ uint8_t SX127XLT::returnOptimisation(uint8_t Bandwidth, uint8_t SpreadingFactor)
 float SX127XLT::calcSymbolTime(float Bandwidth, uint8_t SpreadingFactor)
 {
   //calculates symbol time from passed bandwidth (lbandwidth) and Spreading factor (lSF)and returns in mS
-
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("calcSymbolTime()");
-#endif
-
   float symbolTimemS;
 
   symbolTimemS = 1000 / (Bandwidth / ( 1 << SpreadingFactor));
@@ -2116,10 +1712,6 @@ float SX127XLT::calcSymbolTime(float Bandwidth, uint8_t SpreadingFactor)
 
 void SX127XLT::printModemSettings()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("printModemSettings()");
-#endif
-
   uint8_t regdata;
 
   printDevice();
@@ -2170,42 +1762,7 @@ void SX127XLT::printModemSettings()
 
 void SX127XLT::setSyncWord(uint8_t syncword)
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("setSyncWord()");
-#endif
-
   writeRegister(REG_SYNCWORD, syncword);
-}
-
-uint8_t SX127XLT::readBytes(uint8_t *rxbuffer,   uint8_t size)
-{
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("readBytes()");
-#endif
-
-  uint8_t x, index;
-  
-  for (index = 0; index < size; index++)
-  {
-#if defined ARDUINO || defined USE_ARDUPI  
-  x = SPI.transfer(0);
-#else
-	x = readRegister(REG_FIFO);
-#endif  
-  rxbuffer[index] = x;
-  }
-  
-  _RXPacketL = _RXPacketL + size;                      //increment count of bytes read
-  return size;
-}
-
-void SX127XLT::setTXDirect()
-{
-  //turns on transmitter, in direct mode for FSK and audio  power level is from 2 to 17
-#ifdef SX127XDEBUG1
-  PRINT_CSTSTR("setTXDirect()");
-#endif
-  writeRegister(REG_OPMODE, 0x0B);           //TX on direct mode, low frequency mode
 }
 
 uint32_t SX127XLT::returnBandwidth()
@@ -2224,52 +1781,8 @@ uint32_t SX127XLT::returnBandwidth()
   return (returnBandwidth(regdata));
 }
 
-#ifdef SX127XDEBUG3
-
-void printDouble(double val, byte precision){
-    // prints val with number of decimal places determine by precision
-    // precision is a number from 0 to 6 indicating the desired decimial places
-    // example: lcdPrintDouble( 3.1415, 2); // prints 3.14 (two decimal places)
-
-    if(val < 0.0){
-        PRINT_CSTSTR("-");
-        val = -val;
-    }
-
-    PRINT_VALUE("%d",int(val));  //prints the int part
-    if( precision > 0) {
-        PRINT_CSTSTR("."); // print the decimal point
-        unsigned long frac;
-        unsigned long mult = 1;
-        byte padding = precision -1;
-        while(precision--)
-            mult *=10;
-
-        if(val >= 0)
-            frac = (val - int(val)) * mult;
-        else
-            frac = (int(val)- val ) * mult;
-        unsigned long frac1 = frac;
-        while( frac1 /= 10 )
-            padding--;
-        while(  padding--)
-            PRINT_CSTSTR("0");
-        PRINT_VALUE("%d",frac) ;
-    }
-}
-
-#endif
-
-// need to set cad_number to a value > 0
-// we advise using cad_number=3 for a SIFS and DIFS=3*SIFS
-#define DEFAULT_CAD_NUMBER    3
-
 uint8_t	SX127XLT::invertIQ(bool invert)
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("invertIQ()");
-#endif
-
   if (invert)
   {
   	writeRegister(REG_INVERTIQ, 0x66);
@@ -2287,27 +1800,15 @@ uint8_t	SX127XLT::invertIQ(bool invert)
 
 uint8_t SX127XLT::readRXSeqNo()
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("readRXSeqNo()");
-#endif
-  
   return(_RXSeqNo);
 }
 
 void SX127XLT::setPA_BOOST(bool pa_boost)
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("setPA_BOOST()");
-#endif
-
   _PA_BOOST=pa_boost;
 } 
 
 void SX127XLT::setDevAddr(uint8_t addr)
 {
-#ifdef SX127XDEBUG1
-  PRINTLN_CSTSTR("setDevAddr()");
-#endif
-	
 	_DevAddr=addr;
 }

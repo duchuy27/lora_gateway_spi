@@ -27,32 +27,46 @@ class SX127XLT
     void setMode(uint8_t modeconfig);         //same function as setStandby()
     void calibrateImage(uint8_t null);
 
-    void printDevice();                 
+    //*******************************************************************************
+    //lay thong so
+    //*******************************************************************************
+    void printDevice(); 
+    void printOperatingMode();
+    uint8_t getOpmode();
+    uint8_t getVersion();
+    uint8_t getPacketMode();           //LoRa or FSK
+    uint8_t getHeaderMode();
+    uint8_t getCRCMode();
+    uint8_t getAGC();
+    uint8_t getLNAgain();
+    uint8_t getLNAboostHF();
+    uint8_t getLNAboostLF();
+    void printOperatingSettings();
+
+    //*******************************************************************************
+    //LoRa specific routines
+    //*******************************************************************************
+    uint32_t getFreqInt();
+    uint8_t getLoRaSF();
+    uint32_t returnBandwidth(uint8_t BWregvalue); 
+    uint8_t getLoRaCodingRate();
+    uint8_t getOptimisation();
+    uint8_t getSyncWord();
+    uint8_t getInvertIQ();
+    uint16_t getPreamble();
+    void printModemSettings();
+
     void writeRegister( uint8_t address, uint8_t value );
     uint8_t readRegister( uint8_t address );
-    void printOperatingMode();
-    void printOperatingSettings();
 
     void setTxParams(int8_t txPower, uint8_t rampTime);
     void setPacketParams(uint16_t packetParam1, uint8_t  packetParam2, uint8_t packetParam3, uint8_t packetParam4, uint8_t packetParam5);
     void setModulationParams(uint8_t modParam1, uint8_t modParam2, uint8_t  modParam3, uint8_t  modParam4);
     void setRfFrequency(uint64_t freq64, int32_t offset);
-    uint32_t getFreqInt();
-    int32_t getFrequencyErrorHz();
 
     void setTx(uint32_t timeout);
     void setRx(uint32_t timeout);
-
     void setHighSensitivity();
-
-    uint8_t getAGC();
-    uint8_t getLNAgain();
-    uint8_t getCRCMode();
-    uint8_t getHeaderMode();
-    uint8_t getLNAboostHF();
-    uint8_t getLNAboostLF();
-    uint8_t getOpmode();
-    uint8_t getPacketMode();           //LoRa or FSK
 
     uint8_t readRXPacketL(); 
     int8_t readPacketRSSI();
@@ -70,53 +84,21 @@ class SX127XLT
     void setDioIrqParams(uint16_t irqMask, uint16_t dio0Mask, uint16_t dio1Mask, uint16_t dio2Mask );
     void printIrqStatus();
 
-    void printHEXByte0x(uint8_t temp);
-
     //*******************************************************************************
     //Packet Read and Write Routines
     //*******************************************************************************
-
     uint8_t receive(uint8_t *rxbuffer, uint8_t size, uint32_t rxtimeout, uint8_t wait);
     uint8_t receiveAddressed(uint8_t *rxbuffer, uint8_t size, uint32_t rxtimeout, uint8_t wait);
-
     uint8_t transmit(uint8_t *txbuffer, uint8_t size, uint32_t txtimeout, int8_t txPower, uint8_t wait);
     uint8_t transmitAddressed(uint8_t *txbuffer, uint8_t size, char txpackettype, char txdestination, char txsource, uint32_t txtimeout, int8_t txpower, uint8_t wait);
-
-    //*******************************************************************************
-    //LoRa specific routines
-    //*******************************************************************************
-
-    uint8_t getLoRaSF();
-    uint8_t getLoRaCodingRate();
-    uint8_t getOptimisation();
-    uint8_t getSyncWord();
-    uint8_t getInvertIQ();
-    uint8_t getVersion();
-    uint16_t getPreamble();
-
-    uint32_t returnBandwidth(uint8_t BWregvalue);                            //returns in hz the current set bandwidth
     uint8_t returnOptimisation(uint8_t SpreadingFactor, uint8_t Bandwidth);  //this returns the required optimisation setting
     float calcSymbolTime(float Bandwidth, uint8_t SpreadingFactor);
-    void printModemSettings();
     void setSyncWord(uint8_t syncword);
-    void setTXDirect();
-    
-
     uint32_t returnBandwidth();
-
     uint8_t invertIQ(bool invert);
-
-
     uint8_t readRXSeqNo();
     void setPA_BOOST(bool pa_boost);
-
     void setDevAddr(uint8_t addr);
-
-    //*******************************************************************************
-    //Read Write SX12xxx Buffer commands, this is the buffer internal to the SX12xxxx
-    //*******************************************************************************
-
-    uint8_t readBytes(uint8_t *rxbuffer,   uint8_t size);
 
     //######################################
     uint8_t spi_read(uint32_t data);
