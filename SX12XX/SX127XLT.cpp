@@ -55,14 +55,7 @@
 
 #define LTUNUSED(v) (void) (v)       //add LTUNUSED(variable); in functions to avoid compiler warnings
 
-#define SX127XDEBUG_TEST           //enable test debug messages
 #define SX127XDEBUGACK               //enable ack transaction debug messages
-#define SX127XDEBUGRTS
-//#define SX127XDEBUGCAD
-//#define DEBUGPHANTOM               //used to set bebuging for Phantom packets
-//#define SX127XDEBUGPINS            //enable pin allocation debug messages
-//#define DEBUGFSKRTTY               //enable for FSKRTTY debugging 
-
 
 SX127XLT::SX127XLT()
 {  
@@ -819,14 +812,6 @@ uint16_t SX127XLT::readIrqStatus()
   bool packetHasCRC;
 
   packetHasCRC = (readRegister(REG_HOPCHANNEL) & 0x40);        //read the packet has CRC bit in RegHopChannel
-
-
-#ifdef DEBUGPHANTOM
-  PRINT_CSTSTR("PacketHasCRC = ");
-  PRINTLN_VALUE("%d",packetHasCRC);
-  PRINT_CSTSTR("_UseCRC = ");
-  PRINTLN_VALUE("%d",_UseCRC);
-#endif
   
   if ( !packetHasCRC && _UseCRC )                                //check if packet header indicates no CRC on packet, byt use CRC set
   {

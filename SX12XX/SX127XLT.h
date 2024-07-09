@@ -133,7 +133,9 @@ class SX127XLT
     int8_t _PacketSNRinACK;
     void (*_lowPowerFctPtr)(unsigned long);
 };
-#endif
+
 //######################################
 extern uint8_t *temp;
 //######################################
+
+#endif
