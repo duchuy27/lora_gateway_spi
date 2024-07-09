@@ -256,7 +256,6 @@ void loraConfig() {
   //The function call list below shows the complete setup for the LoRa device using the information defined in the
   //Settings.h file.
   //The 'Setup Lora device' list below can be replaced with a single function call;
-  //LT.setupLoRa(Frequency, Offset, SpreadingFactor, Bandwidth, CodeRate, Optimisation);
 
   //***************************************************************************************************
   //Setup Lora device
@@ -355,7 +354,7 @@ void setup()
 {
   srand (time(NULL));
   
-  SPI.begin();
+//   SPI.begin();
 
   //setup hardware pins used by device, then check if device is found
 //   if (LT.begin(NSS, NRESET, DIO0, DIO1, DIO2, LORA_DEVICE)) PRINTLN_CSTSTR("^$**********Power ON");
