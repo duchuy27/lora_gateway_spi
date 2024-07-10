@@ -39,7 +39,7 @@ arduinoPi.o: arduinoPi.cpp arduinoPi.h
 	$(CC) $(CFLAGS) -c $< -o $@	
 	
 base64.o: base64.c base64.h
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c base64.c -o base64.o
 
 .PHONY: clean
 
