@@ -44,7 +44,7 @@
 #include <math.h>
 #endif
 
-#include <SX127XLT.h>
+#include "SX127XLT.h"
 
 //use polling on REG_IRQFLAGS instead of DIO0
 #define USE_POLLING

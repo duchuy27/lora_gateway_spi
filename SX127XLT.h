@@ -17,7 +17,7 @@
   #endif
 #endif
 
-#include <SX127XLT_Definitions.h>
+#include "SX127XLT_Definitions.h"
 
 class SX127XLT
 {

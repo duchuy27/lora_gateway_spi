@@ -1,4 +1,4 @@
-#include <SX127XLT.h>                                          
+#include "SX127XLT.h"                                        
 #include "SX127X_lora_gateway.h"
 #include <stdio.h>
 #include <stdlib.h>
