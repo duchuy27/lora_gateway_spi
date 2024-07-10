@@ -185,7 +185,7 @@ private:
         size_t newCapacity;
         if (stack_ == 0) {
             if (!allocator_)
-                ownAllocator_ = allocator_ = RAPIDJSON_NEW(Allocator)();
+                ownAllocator_ = allocator_ = new Allocator();
             newCapacity = initialCapacity_;
         } else {
             newCapacity = GetCapacity();
@@ -207,7 +207,7 @@ private:
 
     void Destroy() {
         Allocator::Free(stack_);
-        RAPIDJSON_DELETE(ownAllocator_); // Only delete if it is owned by the stack
+        delete ownAllocator_; // Only delete if it is owned by the stack
     }
 
     // Prohibit copy constructor & assignment operator.
