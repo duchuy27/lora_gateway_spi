@@ -7,11 +7,9 @@ HWLIBS_ROOT = $(SOCEDS_ROOT)/ip/altera/hps/altera_hps/hwlib
 
 CROSS_COMPILE =/home/qikay/de10nano-wd/gcc-arm-10.3-2021.07-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-
 
-CFLAGS = -g -Wall -D$(ALT_DEVICE_FAMILY) \
-	-I$(HWLIBS_ROOT)/include/$(ALT_DEVICE_FAMILY) \
-	-I$(HWLIBS_ROOT)/include/
+CFLAGS = -g -Wall -D$(ALT_DEVICE_FAMILY) -I$(HWLIBS_ROOT)/include/$(ALT_DEVICE_FAMILY) -I$(HWLIBS_ROOT)/include/
 LDFLAGS = -g -Wall
-CC = $(CROSS_COMPILE)gcc
+CC = $(CROSS_COMPILE)g++
 ARCH = arm
 
 # --------------> ALL RPI using wiringPi
