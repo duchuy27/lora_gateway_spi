@@ -30,6 +30,7 @@ class SX127XLT
     //*******************************************************************************
     //lay thong so
     //*******************************************************************************
+    void setDevice(uint8_t type);
     void printDevice(); 
     void printOperatingMode();
     uint8_t getOpmode();

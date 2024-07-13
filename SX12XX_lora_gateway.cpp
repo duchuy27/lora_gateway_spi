@@ -3,6 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <error.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <stdint.h>
+#include <sys/mman.h>
 #ifdef GETOPT_ISSUE
 int getopt (int argc, char * const argv[], const char *optstring);
 extern char *optarg;
@@ -51,13 +56,13 @@ enum { DELAY_DNWFILE     =  900 }; // in millisecs
 enum { MARGIN_DNW        =  20 }; // in millisecs
 
 #include "base64.h"
-#include "rapidjson/reader.h"
-#include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
+// #include "rapidjson/reader.h"
+// #include "rapidjson/document.h"
+// #include "rapidjson/writer.h"
+// #include "rapidjson/stringbuffer.h"
 #include <iostream>
 
-using namespace rapidjson;
+// using namespace rapidjson;
 using namespace std;
 
 bool enableDownlinkCheck=true;
@@ -264,7 +269,7 @@ void loraConfig() {
   LT.setPacketType(PACKET_TYPE_LORA);
   //set the operating frequency                 
   LT.setRfFrequency(DEFAULT_CHANNEL, Offset);                   
-//run calibration after setting frequency
+  //run calibration after setting frequency
   LT.calibrateImage(0);
   //set LoRa modem parameters
   LT.setModulationParams(SpreadingFactor, Bandwidth, CodeRate, Optimisation);                                  
@@ -351,19 +356,10 @@ uint32_t getGwDateTime()
 void setup()
 {
   srand (time(NULL));
-  
-//   SPI.begin();
 
-  //setup hardware pins used by device, then check if device is found
-//   if (LT.begin(NSS, NRESET, DIO0, DIO1, DIO2, LORA_DEVICE)) 
 	PRINTLN_CSTSTR("^$**********Power ON");
-//   else{
-//     PRINTLN_CSTSTR("^$No device responding");
-//     while (1){}
-//   }
-
+  
   loraConfig(); 
-
 #if defined DOWNLINK
   PRINTLN_CSTSTR("^$Low-level gateway has downlink support");
   if (!enableDownlinkCheck)
@@ -412,14 +408,13 @@ void packet_is_Error()
   
 void loop(void) 
 { 
-	int i=0;
-	int RXPacketL=0;
-	char print_buf[100];
-	uint32_t current_time_tmst;
+	//int i=0;
+	int RXPacketL=0;					//độ dài gói tin
+	char print_buf[100];				//bộ lưu trữ chuỗi in ra
+	//uint32_t current_time_tmst;		
 
 	/////////////////////////////////////////////////////////////////// 
 	// START OF PERIODIC TASKS
-
 	bool receivedFromLoRa=false;
 
 	/////////////////////////////////////////////////////////////////// 
@@ -434,18 +429,19 @@ void loop(void)
 			status_counter=0;
 		} 
 		
-		if (optRAW)
+		if (optRAW) //nhận thô hay nhận có địa chỉ thì minh đang nhận có địa chỉ
 			RXPacketL = LT.receive(RXBUFFER, RXBUFFER_SIZE, 10000, WAIT_RX);
 		else {	
 			RXPacketL = LT.receiveAddressed(RXBUFFER, RXBUFFER_SIZE, 10000, WAIT_RX);
 			
-			//for packet with our header, destination must be GW_ADDR (i.e. 1) otherwise we reject it
+			//kiểm tra xem có phải địa chỉ gateway ko nếu ko thì bỏ qua
 			if (LT.readRXDestination()!=GW_ADDR)
 				RXPacketL=-1;
 		}
 		
+		//đoạn này xác định gói tin nhận là đúng rồi
 		if (RXPacketL>0) {
-			//get timestamps only when we actually receive something
+			//lấy thời gian hiện tại
 			rcv_time_tmst=getGwDateTime();
 			rcv_time_ms=millis();
 			
@@ -552,9 +548,7 @@ void loop(void)
 			PRINT_STR("%c",(char)DATA_PREFIX_0);        
 			PRINT_STR("%c",(char)DATA_PREFIX_1);
 	#endif
-
 			// print to stdout the content of the packet
-			//
 			FLUSHOUTPUT;
 	 
 			for (int a=0; a<RXPacketL; a++) {
@@ -574,373 +568,373 @@ void loop(void)
 		}
 	}	
 
-  if (receivedFromLoRa || checkForLateDownlinkRX2 || checkForLateDownlinkJACC1 || checkForLateDownlinkJACC2) {
+//   if (receivedFromLoRa || checkForLateDownlinkRX2 || checkForLateDownlinkJACC1 || checkForLateDownlinkJACC2) {
 
-#ifdef DOWNLINK
-    // handle downlink request
-		bool hasDownlinkEntry=false;    	
-		char* downlink_json_entry=NULL;
-		uint8_t TXPacketL;
+// #ifdef DOWNLINK
+//     // handle downlink request
+// 		bool hasDownlinkEntry=false;    	
+// 		char* downlink_json_entry=NULL;
+// 		uint8_t TXPacketL;
 		
-#ifdef DEBUG_DOWNLINK_TIMING
-		//this is the time (millis()) at which we start waiting for checking downlink requests
-		PRINT_CSTSTR("^$downlink wait: ");
-		PRINTLN_VALUE("%lu", millis());
-#endif
+// #ifdef DEBUG_DOWNLINK_TIMING
+// 		//this is the time (millis()) at which we start waiting for checking downlink requests
+// 		PRINT_CSTSTR("^$downlink wait: ");
+// 		PRINTLN_VALUE("%lu", millis());
+// #endif
     		    	
-		if (enableDownlinkCheck)  {	
+// 		if (enableDownlinkCheck)  {	
 
-			//wait until it is the (approximate) right time to check for downlink requests
-			//because the generation of downlink.txt file takes some time
-			//only for RX1, after that, we simply pass
-			while (millis()-rcv_time_ms < DELAY_DNWFILE)
-				;
+// 			//wait until it is the (approximate) right time to check for downlink requests
+// 			//because the generation of downlink.txt file takes some time
+// 			//only for RX1, after that, we simply pass
+// 			while (millis()-rcv_time_ms < DELAY_DNWFILE)
+// 				;
 
-#ifdef DEBUG_DOWNLINK_TIMING
-			//this is the time (millis()) at which we start checking downlink requests
-		PRINT_CSTSTR("^$downlink check: ");
-		PRINTLN_VALUE("%lu", millis());
-#endif
-			//to set time_str 
-			current_time_tmst=getGwDateTime();   	
+// #ifdef DEBUG_DOWNLINK_TIMING
+// 			//this is the time (millis()) at which we start checking downlink requests
+// 		PRINT_CSTSTR("^$downlink check: ");
+// 		PRINTLN_VALUE("%lu", millis());
+// #endif
+// 			//to set time_str 
+// 			current_time_tmst=getGwDateTime();   	
 	
-			// use rapidjson to parse all lines
-			// if there is a downlink.txt file then read all lines in memory for
-			// further processing
-			if (checkForLateDownlinkRX2)
-				PRINT_CSTSTR("^$----delayRX2-----------------------------------------\n");
-			else if (checkForLateDownlinkJACC1)	
-				PRINT_CSTSTR("^$----retryJACC1---------------------------------------\n");    			
-			else if (checkForLateDownlinkJACC2)	
-				PRINT_CSTSTR("^$----retryJACC2---------------------------------------\n");
-			else	
-				PRINT_CSTSTR("^$-----------------------------------------------------\n");
+// 			// use rapidjson to parse all lines
+// 			// if there is a downlink.txt file then read all lines in memory for
+// 			// further processing
+// 			if (checkForLateDownlinkRX2)
+// 				PRINT_CSTSTR("^$----delayRX2-----------------------------------------\n");
+// 			else if (checkForLateDownlinkJACC1)	
+// 				PRINT_CSTSTR("^$----retryJACC1---------------------------------------\n");    			
+// 			else if (checkForLateDownlinkJACC2)	
+// 				PRINT_CSTSTR("^$----retryJACC2---------------------------------------\n");
+// 			else	
+// 				PRINT_CSTSTR("^$-----------------------------------------------------\n");
 				
-			PRINT_CSTSTR("^$Check for downlink requests ");
-			PRINT_STR("%s", time_str);
-			PRINTLN_VALUE("%lu", current_time_tmst);
+// 			PRINT_CSTSTR("^$Check for downlink requests ");
+// 			PRINT_STR("%s", time_str);
+// 			PRINTLN_VALUE("%lu", current_time_tmst);
 			
-			FILE *fp = fopen("downlink/downlink.txt","r");
+// 			FILE *fp = fopen("downlink/downlink.txt","r");
 			
-			if (fp) {
+// 			if (fp) {
 				
-				fclose(fp);
+// 				fclose(fp);
 				
-				// remove any \r characters introduced by various OS and/or tools
-				system("sed -i 's/\r//g' downlink/downlink.txt");
-				// remove empty lines
-				system("sed -i '/^$/d' downlink/downlink.txt");
+// 				// remove any \r characters introduced by various OS and/or tools
+// 				system("sed -i 's/\r//g' downlink/downlink.txt");
+// 				// remove empty lines
+// 				system("sed -i '/^$/d' downlink/downlink.txt");
 				
-				fp = fopen("downlink/downlink.txt","r");
+// 				fp = fopen("downlink/downlink.txt","r");
 				
-				size_t len=0;
+// 				size_t len=0;
 				
-				ssize_t dl_line_size=getline(&downlink_json_entry, &len, fp);
+// 				ssize_t dl_line_size=getline(&downlink_json_entry, &len, fp);
 
-				PRINT_CSTSTR("^$Read downlink: ");
-				PRINTLN_VALUE("%lu", dl_line_size);
+// 				PRINT_CSTSTR("^$Read downlink: ");
+// 				PRINTLN_VALUE("%lu", dl_line_size);
 							
-				if (dl_line_size>0) {
-					hasDownlinkEntry=true;
-					//PRINT_CSTSTR("^$Downlink entry: ");
-					//PRINTLN_STR("%d", downlink_json_entry);
-				}
+// 				if (dl_line_size>0) {
+// 					hasDownlinkEntry=true;
+// 					//PRINT_CSTSTR("^$Downlink entry: ");
+// 					//PRINTLN_STR("%d", downlink_json_entry);
+// 				}
 				
-				fclose(fp);
+// 				fclose(fp);
     			
-#ifdef KEEP_DOWNLINK_BACKUP_FILE 
-				char tmp_c[100];   			
-				sprintf(tmp_c, "mv downlink/downlink.txt downlink/downlink-backup-%s.txt", time_str);
-				system(tmp_c);
-#else
-				remove("downlink/downlink.txt");
-#endif
+// #ifdef KEEP_DOWNLINK_BACKUP_FILE 
+// 				char tmp_c[100];   			
+// 				sprintf(tmp_c, "mv downlink/downlink.txt downlink/downlink-backup-%s.txt", time_str);
+// 				system(tmp_c);
+// #else
+// 				remove("downlink/downlink.txt");
+// #endif
 
-				//got a downlink, clear all indicators and back to normal reception for next time
-				checkForLateDownlinkRX2=false;
-				checkForLateDownlinkJACC1=false;
-				checkForLateDownlinkJACC2=false;
-				rcv_timeout=MAX_TIMEOUT;					
-			}
-			else {
-				hasDownlinkEntry=false;
-				PRINT_CSTSTR("^$NO NEW DOWNLINK ENTRY\n");
+// 				//got a downlink, clear all indicators and back to normal reception for next time
+// 				checkForLateDownlinkRX2=false;
+// 				checkForLateDownlinkJACC1=false;
+// 				checkForLateDownlinkJACC2=false;
+// 				rcv_timeout=MAX_TIMEOUT;					
+// 			}
+// 			else {
+// 				hasDownlinkEntry=false;
+// 				PRINT_CSTSTR("^$NO NEW DOWNLINK ENTRY\n");
 
-				if (checkForLateDownlinkRX2) {
-					checkForLateDownlinkRX2=false;
-					// retry later, last retry
-					checkForLateDownlinkJACC1=true;
-					//will however wait for new incoming messages up to rcv_time_ms+DELAY_JACC1-(DELAY_DNW1-DELAY_DNWFILE)
-					rcv_timeout=rcv_time_ms+DELAY_JACC1-millis()-(DELAY_DNW1-DELAY_DNWFILE);    			
-    		}
-				else
-					//it was already the last retry for late downlink
-					if (checkForLateDownlinkJACC2) {
-						checkForLateDownlinkJACC2=false;
-						rcv_timeout=MAX_TIMEOUT;
-					}   
-					else
-					if (checkForLateDownlinkJACC1) { 
-						// retry later, for RX2 (join)
-						delay(DELAY_EXTDNW2);
-						checkForLateDownlinkJACC1=false;
-						checkForLateDownlinkJACC2=true;
-					}				 			
-					else {
-						//we initiate the entire downlink check only for LoRaWAN, i.e. when raw mode is enabled
-						if (optRAW) { 
-							// retry later, for RX2 (data)
-							delay(DELAY_EXTDNW2);
-							checkForLateDownlinkRX2=true;
-						}
-					}    			
+// 				if (checkForLateDownlinkRX2) {
+// 					checkForLateDownlinkRX2=false;
+// 					// retry later, last retry
+// 					checkForLateDownlinkJACC1=true;
+// 					//will however wait for new incoming messages up to rcv_time_ms+DELAY_JACC1-(DELAY_DNW1-DELAY_DNWFILE)
+// 					rcv_timeout=rcv_time_ms+DELAY_JACC1-millis()-(DELAY_DNW1-DELAY_DNWFILE);    			
+//     		}
+// 				else
+// 					//it was already the last retry for late downlink
+// 					if (checkForLateDownlinkJACC2) {
+// 						checkForLateDownlinkJACC2=false;
+// 						rcv_timeout=MAX_TIMEOUT;
+// 					}   
+// 					else
+// 					if (checkForLateDownlinkJACC1) { 
+// 						// retry later, for RX2 (join)
+// 						delay(DELAY_EXTDNW2);
+// 						checkForLateDownlinkJACC1=false;
+// 						checkForLateDownlinkJACC2=true;
+// 					}				 			
+// 					else {
+// 						//we initiate the entire downlink check only for LoRaWAN, i.e. when raw mode is enabled
+// 						if (optRAW) { 
+// 							// retry later, for RX2 (data)
+// 							delay(DELAY_EXTDNW2);
+// 							checkForLateDownlinkRX2=true;
+// 						}
+// 					}    			
 
-				FLUSHOUTPUT;
-    	}	   		
-    }
+// 				FLUSHOUTPUT;
+//     	}	   		
+//     }
 
-#ifdef DEBUG_DOWNLINK_TIMING
-		//this is the time (millis()) at which we start processing the downlink requests
-		PRINT_CSTSTR("^$downlink process: ");
-		PRINTLN_VALUE("%lu", millis());
-#endif
+// #ifdef DEBUG_DOWNLINK_TIMING
+// 		//this is the time (millis()) at which we start processing the downlink requests
+// 		PRINT_CSTSTR("^$downlink process: ");
+// 		PRINTLN_VALUE("%lu", millis());
+// #endif
         
-    if (hasDownlinkEntry) {
-			Document document;
+//     if (hasDownlinkEntry) {
+// 			Document document;
 		  
-			bool is_lorawan_downlink=false;
+// 			bool is_lorawan_downlink=false;
 		
-			PRINT_CSTSTR("^$Process downlink request\n");
-			//PRINT_CSTSTR("^$Process downlink requests: ");
-			//PRINTLN_STR("%s", downlink_json_entry);
+// 			PRINT_CSTSTR("^$Process downlink request\n");
+// 			//PRINT_CSTSTR("^$Process downlink requests: ");
+// 			//PRINTLN_STR("%s", downlink_json_entry);
 		
-			document.Parse(downlink_json_entry);
+// 			document.Parse(downlink_json_entry);
 					
-			if (document.IsObject()) {
-				if (document.HasMember("txpk"))								
-					if (document["txpk"].HasMember("modu"))
-						if (document["txpk"]["modu"].IsString())
-							if (document["txpk"]["modu"]=="LORA") {
-								is_lorawan_downlink=true;    
-								//PRINT_CSTSTR("^$data = ");
-								//PRINTLN_STR("%s", document["txpk"]["data"].GetString());
-							}
+// 			if (document.IsObject()) {
+// 				if (document.HasMember("txpk"))								
+// 					if (document["txpk"].HasMember("modu"))
+// 						if (document["txpk"]["modu"].IsString())
+// 							if (document["txpk"]["modu"]=="LORA") {
+// 								is_lorawan_downlink=true;    
+// 								//PRINT_CSTSTR("^$data = ");
+// 								//PRINTLN_STR("%s", document["txpk"]["data"].GetString());
+// 							}
 						
-				if (is_lorawan_downlink) {		
-					PRINT_CSTSTR("^$LoRaWAN downlink request\n");				
+// 				if (is_lorawan_downlink) {		
+// 					PRINT_CSTSTR("^$LoRaWAN downlink request\n");				
 
-					//use the tmst field provided by the Network Server in the downlink message
-					uint32_t send_time_tmst=document["txpk"]["tmst"].GetUint();
-					//to get the waiting delay
-					uint32_t rx_wait_delay=send_time_tmst-rcv_time_tmst;
+// 					//use the tmst field provided by the Network Server in the downlink message
+// 					uint32_t send_time_tmst=document["txpk"]["tmst"].GetUint();
+// 					//to get the waiting delay
+// 					uint32_t rx_wait_delay=send_time_tmst-rcv_time_tmst;
 
-					//uncomment to test re-scheduling for RX2
-					//delay(500);	
+// 					//uncomment to test re-scheduling for RX2
+// 					//delay(500);	
 					
-					bool go_for_downlink=false;
+// 					bool go_for_downlink=false;
 									
-					// just in case
-					if (send_time_tmst < rcv_time_tmst)
-						PRINT_CSTSTR("^$WARNING: downlink tmst in the past, abort\n");	
-					else 
-					if (send_time_tmst - rcv_time_tmst > ((uint32_t)DELAY_JACC2+(uint32_t)DELAY_EXTDNW2)*1000)
-						PRINT_CSTSTR("^$WARNING: downlink tmst too much in future, abort\n");	
-					else
-						{
-							uint32_t wmargin;
+// 					// just in case
+// 					if (send_time_tmst < rcv_time_tmst)
+// 						PRINT_CSTSTR("^$WARNING: downlink tmst in the past, abort\n");	
+// 					else 
+// 					if (send_time_tmst - rcv_time_tmst > ((uint32_t)DELAY_JACC2+(uint32_t)DELAY_EXTDNW2)*1000)
+// 						PRINT_CSTSTR("^$WARNING: downlink tmst too much in future, abort\n");	
+// 					else
+// 						{
+// 							uint32_t wmargin;
 							
-							//determine if we have some margin to re-schedule
-							if (rx_wait_delay/1000 == (uint32_t)DELAY_DNW1 || rx_wait_delay/1000 == (uint32_t)DELAY_JACC1)
-								wmargin=(uint32_t)DELAY_EXTDNW2;
-							else
-								wmargin=0;
+// 							//determine if we have some margin to re-schedule
+// 							if (rx_wait_delay/1000 == (uint32_t)DELAY_DNW1 || rx_wait_delay/1000 == (uint32_t)DELAY_JACC1)
+// 								wmargin=(uint32_t)DELAY_EXTDNW2;
+// 							else
+// 								wmargin=0;
 							
-							//are we behind scheduled 	
-							if (millis() > rcv_time_ms + rx_wait_delay/1000 - MARGIN_DNW) {
-								//
-								if (wmargin) {
-									rx_wait_delay+=(uint32_t)wmargin*1000;
-									go_for_downlink=true;
-									PRINT_CSTSTR("^$WARNING: too late for RX1, try RX2\n");	
-								}
-								else
-									PRINT_CSTSTR("^$WARNING: too late to send downlink, abort\n");
-							}
-							else
-								go_for_downlink=true;				
-						}
+// 							//are we behind scheduled 	
+// 							if (millis() > rcv_time_ms + rx_wait_delay/1000 - MARGIN_DNW) {
+// 								//
+// 								if (wmargin) {
+// 									rx_wait_delay+=(uint32_t)wmargin*1000;
+// 									go_for_downlink=true;
+// 									PRINT_CSTSTR("^$WARNING: too late for RX1, try RX2\n");	
+// 								}
+// 								else
+// 									PRINT_CSTSTR("^$WARNING: too late to send downlink, abort\n");
+// 							}
+// 							else
+// 								go_for_downlink=true;				
+// 						}
 								
-					if (go_for_downlink) {												
-						uint8_t downlink_payload[256];										
+// 					if (go_for_downlink) {												
+// 						uint8_t downlink_payload[256];										
 				
-						//convert base64 data into binary buffer
-						int downlink_size = b64_to_bin(document["txpk"]["data"].GetString(), document["txpk"]["data"].GetStringLength(), downlink_payload, sizeof downlink_payload);
+// 						//convert base64 data into binary buffer
+// 						int downlink_size = b64_to_bin(document["txpk"]["data"].GetString(), document["txpk"]["data"].GetStringLength(), downlink_payload, sizeof downlink_payload);
 				
-						if (downlink_size != document["txpk"]["size"].GetInt()) {
-							PRINT_CSTSTR("^$WARNING: mismatch between .size and .data size once converter to binary\n");
-						}							
-						//uncomment to test for RX2
-						//rx_wait_delay+=(uint32_t)DELAY_EXTDNW2*1000;
+// 						if (downlink_size != document["txpk"]["size"].GetInt()) {
+// 							PRINT_CSTSTR("^$WARNING: mismatch between .size and .data size once converter to binary\n");
+// 						}							
+// 						//uncomment to test for RX2
+// 						//rx_wait_delay+=(uint32_t)DELAY_EXTDNW2*1000;
 
-						bool useRX2=false;
+// 						bool useRX2=false;
 				
-						if (rx_wait_delay/1000 == (uint32_t)DELAY_DNW2 || rx_wait_delay/1000 == (uint32_t)DELAY_JACC2)
-							useRX2=true;
+// 						if (rx_wait_delay/1000 == (uint32_t)DELAY_DNW2 || rx_wait_delay/1000 == (uint32_t)DELAY_JACC2)
+// 							useRX2=true;
 				
-						// should wait for RX2
-						if (useRX2) {           
+// 						// should wait for RX2
+// 						if (useRX2) {           
 
-							PRINT_CSTSTR("^$Target RX2\n");
-							//set frequency according to RX2 window
-							LT.setRfFrequency(LORAWAN_D2FQ, Offset);
-							//change to SF according to RX2 window
-  							LT.setModulationParams(LORAWAN_D2SF, Bandwidth, CodeRate, Optimisation);									
-						}
-						else PRINT_CSTSTR("^$Target RX1\n");
+// 							PRINT_CSTSTR("^$Target RX2\n");
+// 							//set frequency according to RX2 window
+// 							LT.setRfFrequency(LORAWAN_D2FQ, Offset);
+// 							//change to SF according to RX2 window
+//   							LT.setModulationParams(LORAWAN_D2SF, Bandwidth, CodeRate, Optimisation);									
+// 						}
+// 						else PRINT_CSTSTR("^$Target RX1\n");
 					
-						//wait until it is the (approximate) right time to send the downlink data
-						//downlink data can use DELAY_DNW1 or DELAY_DNW2
-						//join-request-accept can use DELAY_JACC1 or DELAY_JACC2
-						while (millis()-rcv_time_ms < (rx_wait_delay/1000-MARGIN_DNW /* take a margin*/))
-							;
+// 						//wait until it is the (approximate) right time to send the downlink data
+// 						//downlink data can use DELAY_DNW1 or DELAY_DNW2
+// 						//join-request-accept can use DELAY_JACC1 or DELAY_JACC2
+// 						while (millis()-rcv_time_ms < (rx_wait_delay/1000-MARGIN_DNW /* take a margin*/))
+// 							;
 			
-						//	send the packet
-#ifdef DEBUG_DOWNLINK_TIMING						
-						PRINT_CSTSTR("^$downlink send: ");
-						PRINTLN_VALUE("%lu", millis());						
-#endif
-						//LoRaWAN downlink so no header in communication lib								
-						TXPacketL=LT.transmit((uint8_t*)downlink_payload, downlink_size, 10000, MAX_DBM, WAIT_TX);    
+// 						//	send the packet
+// #ifdef DEBUG_DOWNLINK_TIMING						
+// 						PRINT_CSTSTR("^$downlink send: ");
+// 						PRINTLN_VALUE("%lu", millis());						
+// #endif
+// 						//LoRaWAN downlink so no header in communication lib								
+// 						TXPacketL=LT.transmit((uint8_t*)downlink_payload, downlink_size, 10000, MAX_DBM, WAIT_TX);    
 
-						if (TXPacketL>0)
-							PRINTLN_CSTSTR("^$Packet sent");
-						else	
-							PRINT_CSTSTR("^$Send error\n");
+// 						if (TXPacketL>0)
+// 							PRINTLN_CSTSTR("^$Packet sent");
+// 						else	
+// 							PRINT_CSTSTR("^$Send error\n");
 
-						if (useRX2) {					
-							//set back to the reception frequency
-							LT.setRfFrequency(DEFAULT_CHANNEL, Offset);
-							PRINT_CSTSTR("^$Set back frequency\n");	
-							//set back the SF
-  							LT.setModulationParams(SpreadingFactor, Bandwidth, CodeRate, Optimisation);
-							PRINT_CSTSTR("^$Set back SF\n");
-						}
-					}
-				} 
-				else {			
-					// non-LoRaWAN downlink		    
-					if (document["dst"].IsInt()) {
-						PRINT_CSTSTR("^$dst = ");
-						PRINTLN_VALUE("%d", document["dst"].GetInt());
-					}
+// 						if (useRX2) {					
+// 							//set back to the reception frequency
+// 							LT.setRfFrequency(DEFAULT_CHANNEL, Offset);
+// 							PRINT_CSTSTR("^$Set back frequency\n");	
+// 							//set back the SF
+//   							LT.setModulationParams(SpreadingFactor, Bandwidth, CodeRate, Optimisation);
+// 							PRINT_CSTSTR("^$Set back SF\n");
+// 						}
+// 					}
+// 				} 
+// 				else {			
+// 					// non-LoRaWAN downlink		    
+// 					if (document["dst"].IsInt()) {
+// 						PRINT_CSTSTR("^$dst = ");
+// 						PRINTLN_VALUE("%d", document["dst"].GetInt());
+// 					}
 							
-					// check if it is a valid send request
-					if (document["status"]=="send_request" && document["dst"].IsInt()) {
+// 					// check if it is a valid send request
+// 					if (document["status"]=="send_request" && document["dst"].IsInt()) {
 						
-						//TODO CarrierSense?
-						if (1) {
+// 						//TODO CarrierSense?
+// 						if (1) {
 				
-							uint8_t p_type=PKT_TYPE_DATA | PKT_FLAG_DATA_DOWNLINK;
+// 							uint8_t p_type=PKT_TYPE_DATA | PKT_FLAG_DATA_DOWNLINK;
 						
-							uint8_t l=document["data"].GetStringLength();
-							uint8_t* pkt_payload=(uint8_t*)document["data"].GetString();
-							uint8_t downlink_message[256];
+// 							uint8_t l=document["data"].GetStringLength();
+// 							uint8_t* pkt_payload=(uint8_t*)document["data"].GetString();
+// 							uint8_t downlink_message[256];
 						 
-#ifdef INCLUDE_MIC_IN_DOWNLINK    				
-							// we test if we have MIC data in the json entry
-							if (document["MIC0"].IsString() && document["MIC0"]!="") {
+// #ifdef INCLUDE_MIC_IN_DOWNLINK    				
+// 							// we test if we have MIC data in the json entry
+// 							if (document["MIC0"].IsString() && document["MIC0"]!="") {
 						
-								// indicate a downlink packet with a 4-byte MIC after the payload
-								p_type = p_type | PKT_FLAG_DATA_ENCRYPTED;
+// 								// indicate a downlink packet with a 4-byte MIC after the payload
+// 								p_type = p_type | PKT_FLAG_DATA_ENCRYPTED;
 					
-								memcpy(downlink_message, (uint8_t*)document["data"].GetString(), l);
+// 								memcpy(downlink_message, (uint8_t*)document["data"].GetString(), l);
 					
-								// set the 4-byte MIC after the payload
-								downlink_message[l]=(uint8_t)xtoi(document["MIC0"].GetString());
-								downlink_message[l+1]=(uint8_t)xtoi(document["MIC1"].GetString());
-								downlink_message[l+2]=(uint8_t)xtoi(document["MIC2"].GetString());
-								downlink_message[l+3]=(uint8_t)xtoi(document["MIC3"].GetString());
+// 								// set the 4-byte MIC after the payload
+// 								downlink_message[l]=(uint8_t)xtoi(document["MIC0"].GetString());
+// 								downlink_message[l+1]=(uint8_t)xtoi(document["MIC1"].GetString());
+// 								downlink_message[l+2]=(uint8_t)xtoi(document["MIC2"].GetString());
+// 								downlink_message[l+3]=(uint8_t)xtoi(document["MIC3"].GetString());
 							
-								// here we sent the downlink packet with the 4-byte MIC
-								// at the device, the expected behavior is
-								// - to test for the packet type, then remove 4 bytes from the payload length to get the real payload
-								// - use AES encryption on the clear payload to compute the MIC and compare with the MIC sent in the downlink packet
-								// - if both MIC are equal, then accept the downlink packet as a valid downlink packet
-								l += 4;
-								pkt_payload=downlink_message;
-							}			
-#endif
+// 								// here we sent the downlink packet with the 4-byte MIC
+// 								// at the device, the expected behavior is
+// 								// - to test for the packet type, then remove 4 bytes from the payload length to get the real payload
+// 								// - use AES encryption on the clear payload to compute the MIC and compare with the MIC sent in the downlink packet
+// 								// - if both MIC are equal, then accept the downlink packet as a valid downlink packet
+// 								l += 4;
+// 								pkt_payload=downlink_message;
+// 							}			
+// #endif
 
-							//wait until it is the (approximate) right time to send the downlink date
-							//the end-device approximately waits for 1s
-							while (millis()-rcv_time_ms < (DELAY_DNW1-MARGIN_DNW) /* take a margin*/)
-								;
+// 							//wait until it is the (approximate) right time to send the downlink date
+// 							//the end-device approximately waits for 1s
+// 							while (millis()-rcv_time_ms < (DELAY_DNW1-MARGIN_DNW) /* take a margin*/)
+// 								;
 						
-#ifdef DEBUG_DOWNLINK_TIMING						
-							PRINT_CSTSTR("^$downlink send: ");
-							PRINTLN_VALUE("%lu", millis());			
-#endif									
-							TXPacketL=LT.transmitAddressed(pkt_payload, l, p_type, document["dst"].GetInt(), GW_ADDR, 10000, MAX_DBM, WAIT_TX);
+// #ifdef DEBUG_DOWNLINK_TIMING						
+// 							PRINT_CSTSTR("^$downlink send: ");
+// 							PRINTLN_VALUE("%lu", millis());			
+// #endif									
+// 							TXPacketL=LT.transmitAddressed(pkt_payload, l, p_type, document["dst"].GetInt(), GW_ADDR, 10000, MAX_DBM, WAIT_TX);
 							
-							if (TXPacketL>0)
-								PRINT_CSTSTR("^$Packet sent\n");
-							else	
-								PRINT_CSTSTR("^$Send error\n");	
-						}
-						else {
-							PRINT_CSTSTR("^$DELAYED: busy channel\n");	
-							// here we will retry later because of a busy channel
-						}
-					}
-					else {
-						PRINT_CSTSTR("^$DISCARDING: not valid send_request\n");   	
-					}
-				}							
+// 							if (TXPacketL>0)
+// 								PRINT_CSTSTR("^$Packet sent\n");
+// 							else	
+// 								PRINT_CSTSTR("^$Send error\n");	
+// 						}
+// 						else {
+// 							PRINT_CSTSTR("^$DELAYED: busy channel\n");	
+// 							// here we will retry later because of a busy channel
+// 						}
+// 					}
+// 					else {
+// 						PRINT_CSTSTR("^$DISCARDING: not valid send_request\n");   	
+// 					}
+// 				}							
 
-#ifdef KEEP_DOWNLINK_SENT_FILE
+// #ifdef KEEP_DOWNLINK_SENT_FILE
 
-				if (document.HasMember("status")) {
+// 				if (document.HasMember("status")) {
 
-					StringBuffer json_record_buffer;
-					Writer<StringBuffer> writer(json_record_buffer);
+// 					StringBuffer json_record_buffer;
+// 					Writer<StringBuffer> writer(json_record_buffer);
 						
-					getGwDateTime();
+// 					getGwDateTime();
 
-					//transmission successful		
-					if (TXPacketL>0)
-						document["status"].SetString("sent", document.GetAllocator());
-					else
-						document["status"].SetString("sent_fail", document.GetAllocator());
+// 					//transmission successful		
+// 					if (TXPacketL>0)
+// 						document["status"].SetString("sent", document.GetAllocator());
+// 					else
+// 						document["status"].SetString("sent_fail", document.GetAllocator());
 
-					document.Accept(writer);
-					PRINT_CSTSTR("^$JSON record: ");
-					PRINTLN_STR("%s", json_record_buffer.GetString());
+// 					document.Accept(writer);
+// 					PRINT_CSTSTR("^$JSON record: ");
+// 					PRINTLN_STR("%s", json_record_buffer.GetString());
 
-					FILE *fp = fopen("downlink/downlink-sent.txt","a");
+// 					FILE *fp = fopen("downlink/downlink-sent.txt","a");
 		
-					if (fp) {
-						fprintf(fp, "%s %s\n", time_str, json_record_buffer.GetString());
-						fclose(fp);
-					}					
-				}  		
-#endif			
+// 					if (fp) {
+// 						fprintf(fp, "%s %s\n", time_str, json_record_buffer.GetString());
+// 						fclose(fp);
+// 					}					
+// 				}  		
+// #endif			
 
-				if (downlink_json_entry)
-					free(downlink_json_entry);
+// 				if (downlink_json_entry)
+// 					free(downlink_json_entry);
 				
-				PRINT_CSTSTR("^$-----------------------------------------------------\n");
-			}
-			else { 
-				PRINT_CSTSTR("^$WARNING: not valid JSON format, abort\n");
-			}			
-			FLUSHOUTPUT;
-		}	
+// 				PRINT_CSTSTR("^$-----------------------------------------------------\n");
+// 			}
+// 			else { 
+// 				PRINT_CSTSTR("^$WARNING: not valid JSON format, abort\n");
+// 			}			
+// 			FLUSHOUTPUT;
+// 		}	
 		
-		//remove any downlink.txt file that may have been generated late and will therefore be out-dated
-		if (!checkForLateDownlinkRX2 && !checkForLateDownlinkJACC2)
-			remove("downlink/downlink.txt");
-#endif
-	} 
+// 		//remove any downlink.txt file that may have been generated late and will therefore be out-dated
+// 		if (!checkForLateDownlinkRX2 && !checkForLateDownlinkJACC2)
+// 			remove("downlink/downlink.txt");
+// #endif
+// 	} 
 
 #ifdef PERIODIC_RESET100	
 	//test periodic reconfiguration
@@ -1079,7 +1073,11 @@ int main (int argc, char *argv[]){
 	//######################################
 
   setup();
-  
+//   int t = 0;printf("%x",t);
+// 	LT.writeRegister(0x05,0x85);
+// 	printf("%x",t);
+// 	t = LT.readRegister(0x05);
+// 	printf("%x",t);
   while(1){
     loop();
   }

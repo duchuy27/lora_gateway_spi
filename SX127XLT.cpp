@@ -88,6 +88,12 @@ void SX127XLT::calibrateImage(uint8_t null)
   delay(10);                              //calibration time 10mS
 }
 
+void SX127XLT::setDevice(uint8_t type)
+{
+  //_Device = type;
+  _Device = DEVICE_SX1278;
+}
+
 void SX127XLT::printDevice()
 {
   switch (_Device)
@@ -107,7 +113,6 @@ uint8_t SX127XLT::spi_read(uint32_t data){
   t = *((uint32_t *)temp + 0);
 
   if((t & 0x01) == 1){
-		//nhan data
 		*((uint32_t *)temp + 1) = 0;
 		*((uint32_t *)temp + 0) = data;
 		*((uint32_t *)temp + 2) = 1;
@@ -117,7 +122,6 @@ uint8_t SX127XLT::spi_read(uint32_t data){
       t = *((uint32_t *)temp + 0);
 		}
 		*((uint32_t *)temp + 1) = 1;
-		//printf("nhan duoc: %x\n", t >> 2);
 	}
   uint8_t result = t<<2;
   return result;
@@ -129,7 +133,6 @@ void SX127XLT::spi_write(uint32_t data){
   t = *((uint32_t *)temp + 0);
 
   if((t & 0x01) == 1){
-		//nhan data
 		*((uint32_t *)temp + 1) = 0;
 		*((uint32_t *)temp + 0) = data;
 		*((uint32_t *)temp + 2) = 1;
@@ -139,7 +142,6 @@ void SX127XLT::spi_write(uint32_t data){
       t = *((uint32_t *)temp + 0);
 		}
 		*((uint32_t *)temp + 1) = 1;
-		//printf("Da truyen: %x\n", data);
 	}
 }
 //############################################
@@ -151,8 +153,9 @@ void SX127XLT::writeRegister(uint8_t address, uint8_t value)
   spibuf[0] = address | 0x80;
   spibuf[1] = value;
 
-  uint32_t data;
-  data = spibuf[0] | (spibuf[1] << 8);
+  uint32_t data = 0;
+  data |= (spibuf[0] & 0xFF);
+  data |= (spibuf[1] & 0xFF) << 8;
   spi_write(data);
 }
 
@@ -164,8 +167,11 @@ uint8_t SX127XLT::readRegister(uint8_t address)
 	spibuf[0] = address & 0x7F;
 	spibuf[1] = 0x00;
 
-  uint32_t data;
-  data = spibuf[0] | (spibuf[1] << 8);
+  uint32_t data = 0;
+  data |= (spibuf[0] & 0xFF);
+  data |= (spibuf[1] & 0xFF) << 8;
+
+  data = spibuf[0] | (spibuf[1] >> 8);
   regdata = spi_read(data);
 
   return regdata;
@@ -300,7 +306,7 @@ void SX127XLT::setTxParams(int8_t txPower, uint8_t rampTime)
 	if (txPower < 0)
 		return;
 
-  byte RegPaDacReg=(_Device==DEVICE_SX1272)?0x5A:0x4D;
+  byte RegPaDacReg=0x4D;
   
   uint8_t param1, param2;
 
@@ -331,42 +337,28 @@ void SX127XLT::setTxParams(int8_t txPower, uint8_t rampTime)
     else
       param2 = OCP_TRIM_80MA;
   }
-  
-  if (_Device == DEVICE_SX1272) {
-    if (_PA_BOOST) {
-      param1 = txPower - 2;
-      // we set the PA_BOOST pin
-      param1 = param1 | 0b10000000;
-    }
-    else
-      param1 = txPower + 1;
+  uint8_t pmax=15;
 
-    writeRegister(REG_PACONFIG, param1);	// Setting output power value
+  // then Pout = Pmax-(15-_power[3:0]) if  PaSelect=0 (RFO pin for +14dBm)
+  // so L=3dBm; H=7dBm; M=15dBm (but should be limited to 14dBm by RFO pin)
+
+  // and Pout = 17-(15-_power[3:0]) if  PaSelect=1 (PA_BOOST pin for +14dBm)
+  // so x= 14dBm (PA);
+  // when p=='X' for 20dBm, value is 0x0F and RegPaDacReg=0x87 so 20dBm is enabled
+
+  if (_PA_BOOST) {
+    param1 = txPower - 17 + 15;
+    // we set the PA_BOOST pin
+    param1 = param1 | 0b10000000;
   }
-  else {
-    // for the SX1276
-    uint8_t pmax=15;
+  else
+    param1 = txPower - pmax + 15;
 
-    // then Pout = Pmax-(15-_power[3:0]) if  PaSelect=0 (RFO pin for +14dBm)
-    // so L=3dBm; H=7dBm; M=15dBm (but should be limited to 14dBm by RFO pin)
+  // set MaxPower to 7 -> Pmax=10.8+0.6*MaxPower [dBm] = 15
+  param1 = param1 | 0b01110000;
 
-    // and Pout = 17-(15-_power[3:0]) if  PaSelect=1 (PA_BOOST pin for +14dBm)
-    // so x= 14dBm (PA);
-    // when p=='X' for 20dBm, value is 0x0F and RegPaDacReg=0x87 so 20dBm is enabled
+  writeRegister(REG_PACONFIG, param1);
 
-    if (_PA_BOOST) {
-      param1 = txPower - 17 + 15;
-      // we set the PA_BOOST pin
-      param1 = param1 | 0b10000000;
-    }
-    else
-      param1 = txPower - pmax + 15;
-
-    // set MaxPower to 7 -> Pmax=10.8+0.6*MaxPower [dBm] = 15
-    param1 = param1 | 0b01110000;
-
-    writeRegister(REG_PACONFIG, param1);
-  }
   
   writeRegister(REG_OCP, param2);
 }    
@@ -394,29 +386,14 @@ void SX127XLT::setPacketParams(uint16_t packetParam1, uint8_t  packetParam2, uin
 
   //CRC mode
   _UseCRC = packetParam4;                                       //save CRC status
+  //for all devices apart from SX1272
+  //Fixed\Variable length packets
+  regdata = ( (readRegister(REG_MODEMCONFIG1)) & (~READ_IMPLCIT_AND_X)); //mask off bit 0
+  writeRegister(REG_MODEMCONFIG1, (regdata + packetParam2));             //write out with bit 0 set appropriatly
 
-  if (_Device != DEVICE_SX1272)
-  {
-    //for all devices apart from SX1272
-    //Fixed\Variable length packets
-    regdata = ( (readRegister(REG_MODEMCONFIG1)) & (~READ_IMPLCIT_AND_X)); //mask off bit 0
-    writeRegister(REG_MODEMCONFIG1, (regdata + packetParam2));             //write out with bit 0 set appropriatly
-
-    //CRC on payload
-    regdata = ( (readRegister(REG_MODEMCONFIG2)) & (~READ_HASCRC_AND_X));  //mask off all bits bar CRC on - bit 2
-    writeRegister(REG_MODEMCONFIG2, (regdata + (packetParam4 << 2)));      //write out with CRC bit 2 set appropriatly
-  }
-  else
-  {
-    //for SX1272
-    //Fixed\Variable length packets
-    regdata = ( (readRegister(REG_MODEMCONFIG1)) & (~READ_IMPLCIT_AND_2)); //mask off bit 2
-    writeRegister(REG_MODEMCONFIG1, (regdata + (packetParam2 << 2)));      //write out with bit 2 set appropriatly
-
-    //CRC on payload
-    regdata = ( (readRegister(REG_MODEMCONFIG1)) & (~READ_HASCRC_AND_2));  //mask of all bits bar CRC on - bit 1
-    writeRegister(REG_MODEMCONFIG1, (regdata + (packetParam4 << 1)));      //write out with CRC bit 1 set appropriatly
-  }
+  //CRC on payload
+  regdata = ( (readRegister(REG_MODEMCONFIG2)) & (~READ_HASCRC_AND_X));  //mask off all bits bar CRC on - bit 2
+  writeRegister(REG_MODEMCONFIG2, (regdata + (packetParam4 << 2)));      //write out with CRC bit 2 set appropriatly
 }
 
 
@@ -428,70 +405,24 @@ void SX127XLT::setModulationParams(uint8_t modParam1, uint8_t modParam2, uint8_t
   //Spreading factor - same for SX1272 and SX127X - reg 0x1D
   regdata = (readRegister(REG_MODEMCONFIG2) & (~READ_SF_AND_X));
   writeRegister(REG_MODEMCONFIG2, (regdata + (modParam1 << 4)));
-  
-  if (_Device != DEVICE_SX1272)
+
+  //bandwidth
+  regdata = (readRegister(REG_MODEMCONFIG1) & (~READ_BW_AND_X));
+  writeRegister(REG_MODEMCONFIG1, (regdata + modParam2));
+
+  //Coding rate
+  regdata = (readRegister(REG_MODEMCONFIG1) & (~READ_CR_AND_X));
+  writeRegister(REG_MODEMCONFIG1, (regdata + (modParam3)));
+
+  //Optimisation
+  if (modParam4 == LDRO_AUTO)
   {
-    //for all devices apart from SX1272
-
-    //bandwidth
-    regdata = (readRegister(REG_MODEMCONFIG1) & (~READ_BW_AND_X));
-    writeRegister(REG_MODEMCONFIG1, (regdata + modParam2));
-
-    //Coding rate
-    regdata = (readRegister(REG_MODEMCONFIG1) & (~READ_CR_AND_X));
-    writeRegister(REG_MODEMCONFIG1, (regdata + (modParam3)));
-
-    //Optimisation
-    if (modParam4 == LDRO_AUTO)
-    {
-      modParam4 = returnOptimisation(modParam2, modParam1);
-    }
-
-    regdata = (readRegister(REG_MODEMCONFIG3) & (~READ_LDRO_AND_X));
-    writeRegister(REG_MODEMCONFIG3, (regdata + (modParam4 << 3)));
-
+    modParam4 = returnOptimisation(modParam2, modParam1);
   }
-  else
-  {
-    //for SX1272
-    //bandwidth
-    regdata = (readRegister(REG_MODEMCONFIG1) & (~READ_BW_AND_2));   //value will be LORA_BW_500 128, LORA_BW_250 64, LORA_BW_125 0
 
-    switch (modParam2)
-    {
-      case LORA_BW_125:
-        bw = 0x00;
-        break;
+  regdata = (readRegister(REG_MODEMCONFIG3) & (~READ_LDRO_AND_X));
+  writeRegister(REG_MODEMCONFIG3, (regdata + (modParam4 << 3)));
 
-      case LORA_BW_500:
-        bw = 0x80;
-        break;
-
-      case LORA_BW_250:
-        bw = 0x40;
-        break;
-
-      default:
-        bw = 0x00;                       //defaults to LORA_BW_125
-    }
-
-    writeRegister(REG_MODEMCONFIG1, (regdata + bw));
-
-    //Coding rate
-    regdata = (readRegister(REG_MODEMCONFIG1) & (~READ_CR_AND_2));
-    writeRegister(REG_MODEMCONFIG1, (regdata + (modParam3 << 2)));
-
-    //Optimisation
-    if (modParam4 == LDRO_AUTO)
-    {
-      modParam4 = returnOptimisation(modParam2, modParam1);
-    }
-
-    regdata = (readRegister(REG_MODEMCONFIG1) & (~READ_LDRO_AND_2));
-    writeRegister(REG_MODEMCONFIG1, (regdata + modParam4));
-
-  }
-  
   if ( modParam1 == LORA_SF6)
   {
   writeRegister(REG_DETECTOPTIMIZE, 0x05);
@@ -561,17 +492,7 @@ void SX127XLT::setRx(uint32_t timeout)
 
 void SX127XLT::setHighSensitivity()
 {
-  //set Boosted LNA for HF mode
-  if (_Device != DEVICE_SX1272)
-  {
-    //for all devices apart from SX1272
-    writeRegister(REG_LNA, 0x3B ); //at HF 150% LNA current.
-  }
-  else
-  {
-    //for SX1272
-    writeRegister(REG_LNA, 0x23 ); //at HF 10% LNA current.
-  }
+  writeRegister(REG_LNA, 0x3B ); //at HF 150% LNA current.
 }
 
 
@@ -579,16 +500,8 @@ uint8_t SX127XLT::getAGC()
 {
   uint8_t regdata;
 
-  if (_Device != DEVICE_SX1272)
-  {
-    regdata = readRegister(REG_MODEMCONFIG3);
-    regdata = (regdata & READ_AGCAUTO_AND_X);
-  }
-  else
-  {
-    regdata = readRegister(REG_MODEMCONFIG2);
-    regdata = (regdata & READ_AGCAUTO_AND_2);
-  }
+  regdata = readRegister(REG_MODEMCONFIG3);
+  regdata = (regdata & READ_AGCAUTO_AND_X);
 
   return (regdata >> 2);
 }
@@ -609,16 +522,8 @@ uint8_t SX127XLT::getCRCMode()
 
   regdata = readRegister(REG_MODEMCONFIG2);
 
-  if (_Device != DEVICE_SX1272)
-  {
-    regdata = readRegister(REG_MODEMCONFIG2);
-    regdata = ((regdata & READ_HASCRC_AND_X) >> 2);
-  }
-  else
-  {
-    regdata = readRegister(REG_MODEMCONFIG1);
-    regdata = ((regdata & READ_HASCRC_AND_2) >> 1);
-  }
+  regdata = readRegister(REG_MODEMCONFIG2);
+  regdata = ((regdata & READ_HASCRC_AND_X) >> 2);
 
   return regdata;
 }
@@ -630,14 +535,7 @@ uint8_t SX127XLT::getHeaderMode()
 
   regdata = readRegister(REG_MODEMCONFIG1);
 
-  if (_Device != DEVICE_SX1272)
-  {
-    regdata = (regdata & READ_IMPLCIT_AND_X);
-  }
-  else
-  {
-    regdata = ((regdata & READ_IMPLCIT_AND_2) >> 2);
-  }
+  regdata = (regdata & READ_IMPLCIT_AND_X);
 
   return regdata;
 }
@@ -649,14 +547,7 @@ uint8_t SX127XLT::getLNAboostLF()
 
   regdata = readRegister(REG_LNA);
 
-  if (_Device != DEVICE_SX1272)
-  {
-    regdata = (regdata & READ_LNABOOSTLF_AND_X);
-  }
-  else
-  {
-    regdata = (regdata & READ_LNABOOSTLF_AND_X);
-  }
+  regdata = (regdata & READ_LNABOOSTLF_AND_X);
 
   return (regdata >> 3);
 }
@@ -668,14 +559,7 @@ uint8_t SX127XLT::getLNAboostHF()
 
   regdata = readRegister(REG_LNA);
 
-  if (_Device != DEVICE_SX1272)
-  {
-    regdata = (regdata & READ_LNABOOSTHF_AND_X);
-  }
-  else
-  {
-    regdata = (regdata & READ_LNABOOSTHF_AND_X);
-  }
+  regdata = (regdata & READ_LNABOOSTHF_AND_X);
 
   return regdata;
 }
@@ -719,11 +603,11 @@ int8_t SX127XLT::readPacketRSSI()
       // added by C. Pham, using Semtech SX1272 rev3 March 2015
       // for SX1272 we use -139, for SX1276, we use -157
       // then for SX1276 when using low-frequency (i.e. 433MHz band) then we use -164
-      _PacketRSSI = -(OFFSET_RSSI+(_Device==DEVICE_SX1272?0:18)+(savedFrequency<436000000?7:0)) + (double)_PacketRSSI + (double)_PacketSNR*0.25;
+      _PacketRSSI = -(OFFSET_RSSI+18+(savedFrequency<436000000?7:0)) + (double)_PacketRSSI + (double)_PacketSNR*0.25;
   }
   else
   {
-      _PacketRSSI= -(OFFSET_RSSI+(_Device==DEVICE_SX1272?0:18)+(savedFrequency<436000000?7:0)) + (double)_PacketRSSI*16.0/15.0;
+      _PacketRSSI= -(OFFSET_RSSI+18+(savedFrequency<436000000?7:0)) + (double)_PacketRSSI*16.0/15.0;
   }
   
   return _PacketRSSI;
@@ -1536,15 +1420,7 @@ uint8_t SX127XLT::getLoRaCodingRate()
   uint8_t regdata;
   regdata = readRegister(REG_MODEMCONFIG1);
 
-  if (_Device != DEVICE_SX1272)
-  {
-    //for all devices apart from SX1272
-    regdata = (((regdata & READ_CR_AND_X) >> 1) + 4);
-  }
-  else
-  {
-    regdata = (((regdata & READ_CR_AND_2) >> 3) + 4);
-  }
+  regdata = (((regdata & READ_CR_AND_X) >> 1) + 4);
 
   return regdata;
 }
@@ -1554,17 +1430,8 @@ uint8_t SX127XLT::getOptimisation()
 {
   uint8_t regdata;
 
-  if (_Device != DEVICE_SX1272)
-  {
-    //for all devices apart from SX1272
-    regdata = readRegister(REG_MODEMCONFIG3);
-    regdata = ((regdata & READ_LDRO_AND_X) >> 3);
-  }
-  else
-  {
-    regdata = readRegister(REG_MODEMCONFIG1);
-    regdata = (regdata & READ_LDRO_AND_2);
-  }
+  regdata = readRegister(REG_MODEMCONFIG3);
+  regdata = ((regdata & READ_LDRO_AND_X) >> 3);
 
   return regdata;
 }
@@ -1602,63 +1469,40 @@ uint16_t SX127XLT::getPreamble()
 
 uint32_t SX127XLT::returnBandwidth(byte BWregvalue)
 {
-  //uint8_t regdata;
-  if (_Device == DEVICE_SX1272)
+  switch (BWregvalue)
   {
-    switch (BWregvalue)
-    {
-      case 0:
-        return 125000;
+    case 0:
+      return 7800;
 
-      case 64:
-        return 250000;
+    case 16:
+      return 10400;
 
-      case 128:
-        return 500000;
+    case 32:
+      return 15600;
 
-      default:
-        return 0xFF;                      //so that a bandwidth invalid entry can be identified ?
-    }
-  }
-  else
-  {
+    case 48:
+      return 20800;
 
-    switch (BWregvalue)
-    {
-      case 0:
-        return 7800;
+    case 64:
+      return 31200;
 
-      case 16:
-        return 10400;
+    case 80:
+      return 41700;
 
-      case 32:
-        return 15600;
+    case 96:
+      return 62500;
 
-      case 48:
-        return 20800;
+    case 112:
+      return 125000;
 
-      case 64:
-        return 31200;
+    case 128:
+      return 250000;
 
-      case 80:
-        return 41700;
+    case 144:
+      return 500000;
 
-      case 96:
-        return 62500;
-
-      case 112:
-        return 125000;
-
-      case 128:
-        return 250000;
-
-      case 144:
-        return 500000;
-
-      default:
-        return 0xFF;                      //so that a bandwidth invalid entry can be identified ?
-    }
-
+    default:
+      return 0xFF;                      //so that a bandwidth invalid entry can be identified ?
   }
 }
 
@@ -1704,15 +1548,7 @@ void SX127XLT::printModemSettings()
   PRINT_VALUE("%d",getLoRaSF());
   PRINT_CSTSTR(",BW");
 
-
-  if (_Device == DEVICE_SX1272)
-  {
-    regdata = (readRegister(REG_MODEMCONFIG1) & READ_BW_AND_2);
-  }
-  else
-  {
-    regdata = (readRegister(REG_MODEMCONFIG1) & READ_BW_AND_X);
-  }
+  regdata = (readRegister(REG_MODEMCONFIG1) & READ_BW_AND_X);
 
   PRINT_VALUE("%ld",returnBandwidth(regdata));
   PRINT_CSTSTR(",CR4:");
@@ -1751,15 +1587,7 @@ void SX127XLT::setSyncWord(uint8_t syncword)
 uint32_t SX127XLT::returnBandwidth()
 {
   uint8_t regdata;
-
-  if (_Device == DEVICE_SX1272)
-  {
-    regdata = (readRegister(REG_MODEMCONFIG1) & READ_BW_AND_2);
-  }
-  else
-  {
-    regdata = (readRegister(REG_MODEMCONFIG1) & READ_BW_AND_X);
-  }
+  regdata = (readRegister(REG_MODEMCONFIG1) & READ_BW_AND_X);
 
   return (returnBandwidth(regdata));
 }
