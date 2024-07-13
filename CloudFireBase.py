@@ -46,7 +46,7 @@ except AttributeError:
 
 # didn't get a response from firebase server?
 connection_failure = False
-
+context = ssl._create_unverified_context()
 # function to check connection availability with the server
 def test_network_available():
 	connection = False
@@ -57,7 +57,7 @@ def test_network_available():
 	while(not connection and iteration < 4) :
 		try:
 	    	# 3sec timeout in case of server available but overcrowded
-			response=urllib2.urlopen('https://www.firebase.com/', timeout=3)
+			response=urllib2.urlopen('https://www.firebase.com/', timeout=3, context=context)
 			connection = True
 		except urllib2.URLError, e: pass
 		except socket.timeout: pass
